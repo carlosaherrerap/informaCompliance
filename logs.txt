@@ -1,0 +1,109 @@
+web-1       |   ➜  Local:   http://localhost:5173/
+web-1       |   ➜  Network: http://172.18.0.6:5173/
+excel-1     | INFO:     Started server process [1]
+excel-1     | INFO:     Waiting for application startup.
+excel-1     | INFO:     Application startup complete.
+excel-1     | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+web-1       | Error:   Failed to scan for dependencies from entries:
+web-1       |   /app/index.html
+web-1       | /app/src/detalle.html
+web-1       |
+web-1       |   ✘ [ERROR] The symbol "filteredProcesos" has already been declared
+web-1       |
+web-1       |     src/pages/RiskRegisterPage.tsx:278:8:
+web-1       |       278 │   const filteredProcesos = Array.isArray(links)
+web-1       |           ╵         ~~~~~~~~~~~~~~~~
+web-1       |
+web-1       |   The symbol "filteredProcesos" was originally declared here:
+web-1       |
+web-1       |     src/pages/RiskRegisterPage.tsx:182:8:
+web-1       |       182 │   const filteredProcesos = links.filter(l => String(l.id_area) ==...
+web-1       |           ╵         ~~~~~~~~~~~~~~~~
+web-1       |
+web-1       |
+web-1       |     at failureErrorWithLog (/app/node_modules/esbuild/lib/main.js:1472:15)
+web-1       |     at /app/node_modules/esbuild/lib/main.js:945:25
+web-1       |     at runOnEndCallbacks (/app/node_modules/esbuild/lib/main.js:1315:45)
+web-1       |     at buildResponseToResult (/app/node_modules/esbuild/lib/main.js:943:7)
+web-1       |     at /app/node_modules/esbuild/lib/main.js:955:9
+web-1       |     at new Promise (<anonymous>)
+web-1       |     at requestCallbacks.on-end (/app/node_modules/esbuild/lib/main.js:954:54)
+web-1       |     at handleRequest (/app/node_modules/esbuild/lib/main.js:647:17)
+web-1       |     at handleIncomingPacket (/app/node_modules/esbuild/lib/main.js:672:7)
+web-1       |     at Socket.readFromStdout (/app/node_modules/esbuild/lib/main.js:600:7)
+web-1       | 6:55:38 PM [vite] Pre-transform error: /app/src/pages/RiskRegisterPage.tsx: Identifier 'filteredProcesos' has already been declared. (278:8)
+web-1       |
+web-1       |   276 |
+web-1       |   277 |   // Filter processes based on selected area
+web-1       | > 278 |   const filteredProcesos = Array.isArray(links)
+web-1       |       |         ^
+web-1       |   279 |     ? links.filter(l => String(l.id_area) === String(formData.area_id))
+web-1       |   280 |     : [];
+web-1       |   281 |
+web-1       | 6:55:38 PM [vite] Internal server error: /app/src/pages/RiskRegisterPage.tsx: Identifier 'filteredProcesos' has already been declared. (278:8)
+web-1       |
+web-1       |   276 |
+web-1       |   277 |   // Filter processes based on selected area
+web-1       | > 278 |   const filteredProcesos = Array.isArray(links)
+web-1       |       |         ^
+web-1       |   279 |     ? links.filter(l => String(l.id_area) === String(formData.area_id))
+web-1       |   280 |     : [];
+web-1       |   281 |
+web-1       |   Plugin: vite:react-babel
+web-1       |   File: /app/src/pages/RiskRegisterPage.tsx:278:8
+web-1       |   276|
+web-1       |   277|    // Filter processes based on selected area
+web-1       |   278|    const filteredProcesos = Array.isArray(links)
+web-1       |      |          ^
+web-1       |   279|      ? links.filter(l => String(l.id_area) === String(formData.area_id))
+web-1       |   280|      : [];
+web-1       |       at constructor (/app/node_modules/@babel/parser/lib/index.js:365:19)
+web-1       |       at TypeScriptParserMixin.raise (/app/node_modules/@babel/parser/lib/index.js:6599:19)
+web-1       |       at TypeScriptScopeHandler.checkRedeclarationInScope (/app/node_modules/@babel/parser/lib/index.js:1619:19)
+web-1       |       at TypeScriptScopeHandler.declareName (/app/node_modules/@babel/parser/lib/index.js:1585:12)
+web-1       |       at TypeScriptScopeHandler.declareName (/app/node_modules/@babel/parser/lib/index.js:4880:11)
+web-1       |       at TypeScriptParserMixin.declareNameFromIdentifier (/app/node_modules/@babel/parser/lib/index.js:7567:16)
+web-1       |       at TypeScriptParserMixin.checkIdentifier (/app/node_modules/@babel/parser/lib/index.js:7563:12)
+web-1       |       at TypeScriptParserMixin.checkLVal (/app/node_modules/@babel/parser/lib/index.js:7500:12)
+web-1       |       at TypeScriptParserMixin.parseVarId (/app/node_modules/@babel/parser/lib/index.js:13412:10)
+web-1       |       at TypeScriptParserMixin.parseVarId (/app/node_modules/@babel/parser/lib/index.js:9752:11)
+web-1       |       at TypeScriptParserMixin.parseVar (/app/node_modules/@babel/parser/lib/index.js:13383:12)
+web-1       |       at TypeScriptParserMixin.parseVarStatement (/app/node_modules/@babel/parser/lib/index.js:13230:10)
+web-1       |       at TypeScriptParserMixin.parseVarStatement (/app/node_modules/@babel/parser/lib/index.js:9408:31)
+web-1       |       at TypeScriptParserMixin.parseStatementContent (/app/node_modules/@babel/parser/lib/index.js:12851:23)
+web-1       |       at TypeScriptParserMixin.parseStatementContent (/app/node_modules/@babel/parser/lib/index.js:9508:18)
+web-1       |       at TypeScriptParserMixin.parseStatementLike (/app/node_modules/@babel/parser/lib/index.js:12767:17)
+web-1       |       at TypeScriptParserMixin.parseStatementListItem (/app/node_modules/@babel/parser/lib/index.js:12747:17)
+web-1       |       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/app/node_modules/@babel/parser/lib/index.js:13316:61)
+web-1       |       at TypeScriptParserMixin.parseBlockBody (/app/node_modules/@babel/parser/lib/index.js:13309:10)
+web-1       |       at TypeScriptParserMixin.parseBlock (/app/node_modules/@babel/parser/lib/index.js:13297:10)
+web-1       |       at TypeScriptParserMixin.parseFunctionBody (/app/node_modules/@babel/parser/lib/index.js:12100:24)
+web-1       |       at TypeScriptParserMixin.parseFunctionBodyAndFinish (/app/node_modules/@babel/parser/lib/index.js:12086:10)
+web-1       |       at TypeScriptParserMixin.parseFunctionBodyAndFinish (/app/node_modules/@babel/parser/lib/index.js:9172:18)
+web-1       |       at /app/node_modules/@babel/parser/lib/index.js:13445:12
+web-1       |       at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/app/node_modules/@babel/parser/lib/index.js:12403:14)
+web-1       |       at TypeScriptParserMixin.parseFunction (/app/node_modules/@babel/parser/lib/index.js:13444:10)
+web-1       |       at TypeScriptParserMixin.parseExportDefaultExpression (/app/node_modules/@babel/parser/lib/index.js:13907:19)
+web-1       |       at TypeScriptParserMixin.parseExportDefaultExpression (/app/node_modules/@babel/parser/lib/index.js:9402:18)
+web-1       |       at TypeScriptParserMixin.parseExport (/app/node_modules/@babel/parser/lib/index.js:13828:25)
+web-1       |       at TypeScriptParserMixin.parseExport (/app/node_modules/@babel/parser/lib/index.js:9385:20)
+web-1       |       at TypeScriptParserMixin.parseStatementContent (/app/node_modules/@babel/parser/lib/index.js:12878:27)
+web-1       |       at TypeScriptParserMixin.parseStatementContent (/app/node_modules/@babel/parser/lib/index.js:9508:18)
+web-1       |       at TypeScriptParserMixin.parseStatementLike (/app/node_modules/@babel/parser/lib/index.js:12767:17)
+web-1       |       at TypeScriptParserMixin.parseModuleItem (/app/node_modules/@babel/parser/lib/index.js:12744:17)
+web-1       |       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/app/node_modules/@babel/parser/lib/index.js:13316:36)
+web-1       |       at TypeScriptParserMixin.parseBlockBody (/app/node_modules/@babel/parser/lib/index.js:13309:10)
+web-1       |       at TypeScriptParserMixin.parseProgram (/app/node_modules/@babel/parser/lib/index.js:12622:10)
+web-1       |       at TypeScriptParserMixin.parseTopLevel (/app/node_modules/@babel/parser/lib/index.js:12612:25)
+web-1       |       at TypeScriptParserMixin.parse (/app/node_modules/@babel/parser/lib/index.js:14488:25)
+web-1       |       at TypeScriptParserMixin.parse (/app/node_modules/@babel/parser/lib/index.js:10126:18)
+web-1       |       at parse (/app/node_modules/@babel/parser/lib/index.js:14522:38)
+web-1       |       at parser (/app/node_modules/@babel/core/lib/parser/index.js:41:34)
+web-1       |       at parser.next (<anonymous>)
+web-1       |       at normalizeFile (/app/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+web-1       |       at normalizeFile.next (<anonymous>)
+web-1       |       at run (/app/node_modules/@babel/core/lib/transformation/index.js:22:50)
+web-1       |       at run.next (<anonymous>)
+web-1       |       at transform (/app/node_modules/@babel/core/lib/transform.js:22:33)
+web-1       |       at transform.next (<anonymous>)
+web-1       |       at step (/app/node_modules/gensync/index.js:261:32)

@@ -6,8 +6,14 @@ import SearchPage from "./pages/SearchPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import OperationsRegistryPage from "./pages/OperationsRegistryPage";
+import RiskMatrixPage from "./pages/RiskMatrixPage";
+import RiskRegisterPage from "./pages/RiskRegisterPage";
 import CompletarPerfilPage from "./pages/CompletarPerfilPage";
+import ScoringRiesgoPage from "./pages/ScoringRiesgoPage";
+import CanalDenunciasPage from "./pages/CanalDenunciasPage";
+import ReporteOperacionesPage from "./pages/ReporteOperacionesPage";
 import { LoadPage } from "./pages/LoadPage";
+
 
 function isTokenValid(): boolean {
   const t = localStorage.getItem("auth_token");
@@ -37,11 +43,17 @@ export default function App() {
     <Routes>
       <Route path="/login" element={logged ? <Navigate to="/home" replace /> : <LoginPage />} />
       <Route path="/registro" element={logged ? <Navigate to="/home" replace /> : <RegisterPage />} />
-      <Route path="/completar-perfil" element={<CompletarPerfilPage />} />
       <Route path="/home" element={<RequireAuth><HomePage /></RequireAuth>} />
       <Route path="/perfil" element={<RequireAuth><ProfilePage /></RequireAuth>} />
       <Route path="/busqueda" element={<RequireAuth><SearchPage /></RequireAuth>} />
       <Route path="/registro-operaciones" element={<RequireAuth><OperationsRegistryPage /></RequireAuth>} />
+      <Route path="/matriz-riesgos" element={<RequireAuth><RiskMatrixPage /></RequireAuth>} />
+      <Route path="/registro-riesgo" element={<RequireAuth><RiskRegisterPage /></RequireAuth>} />
+      <Route path="/registro-riesgo/:id" element={<RequireAuth><RiskRegisterPage /></RequireAuth>} />
+      <Route path="/scoring" element={<RequireAuth><ScoringRiesgoPage /></RequireAuth>} />
+      <Route path="/denuncias" element={<CanalDenunciasPage />} />
+      <Route path="/reporte-operaciones" element={<RequireAuth><ReporteOperacionesPage /></RequireAuth>} />
+      <Route path="/completar-perfil" element={<RequireAuth><CompletarPerfilPage /></RequireAuth>} />
       <Route path="/load" element={<RequireAuth><LoadPage /></RequireAuth>} />
       <Route path="/" element={<Navigate to={logged ? "/home" : "/login"} replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

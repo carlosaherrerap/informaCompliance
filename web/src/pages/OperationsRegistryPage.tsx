@@ -483,10 +483,6 @@ export default function OperationsRegistryPage() {
             </button>
           </div>
         </form>
-
-        <footer className="mt-12 bg-[#474a52] py-4 text-center text-[10px] text-white font-medium uppercase tracking-widest px-8">
-          © 2022 - ComplyTools - Software de Prevencion de Riesgos | D: Av. Victor Andrés Belaúnde 370, San Isidro | T: (01) 514-9100
-        </footer>
       </div>
     );
   }
@@ -565,9 +561,7 @@ export default function OperationsRegistryPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-0 w-full bg-[#474a52] py-4 text-center text-[10px] text-white font-medium uppercase tracking-widest">
-        © 2022 - ComplyTools - Software de Prevencion de Riesgos | D: Av. Victor Andrés Belaúnde 370, San Isidro | T: (01) 514-9100
-      </footer>
+
     </div>
   );
 }

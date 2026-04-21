@@ -50,7 +50,7 @@ export default function ProfilePage() {
               <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary pointer-events-none mt-0.5">A</span>
             </div>
             <div>
-              <h1 className="text-[#111318] dark:text-white text-lg font-black tracking-tight uppercase">antiDark</h1>
+              <h1 className="text-[#111318] dark:text-white text-lg font-black tracking-tight uppercase">INFORMAPERU</h1>
               <p className="text-[#616f89] text-[9px] font-bold uppercase tracking-widest opacity-60">PERFIL</p>
             </div>
           </div>

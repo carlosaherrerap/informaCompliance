@@ -220,11 +220,11 @@ CREATE TABLE IF NOT EXISTS registro_operaciones (
   nro_cuenta_1 VARCHAR(100),
   nro_cuenta_2 VARCHAR(100),
   nro_cuenta_3 VARCHAR(100),
-  
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS beneficiarios_operacion (
+
   id SERIAL PRIMARY KEY,
   id_registro_operacion INTEGER REFERENCES registro_operaciones(id) ON DELETE CASCADE,
   numero_beneficiario VARCHAR(50),
@@ -233,4 +233,97 @@ CREATE TABLE IF NOT EXISTS beneficiarios_operacion (
   num_doc VARCHAR(50),
   fec_nac DATE
 );
+
+-- NUEVAS TABLAS PARA MATRIZ DE RIESGOS
+
+CREATE TABLE IF NOT EXISTS matriz_riesgo_areas (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre VARCHAR(250) NOT NULL,
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS matriz_riesgo_procesos (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre VARCHAR(250) NOT NULL,
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS matriz_riesgo_area_proceso (
+  id SERIAL PRIMARY KEY,
+  id_area INTEGER REFERENCES matriz_riesgo_areas(id) ON DELETE CASCADE,
+  id_proceso INTEGER REFERENCES matriz_riesgo_procesos(id) ON DELETE CASCADE,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  UNIQUE(id_area, id_proceso)
+);
+
+CREATE TABLE IF NOT EXISTS matriz_riesgo_analisis (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  
+  -- SECCIÓN I: RIESGO INHERENTE
+  tipo_empresa VARCHAR(100),
+  titulo VARCHAR(250),
+  area_id INTEGER REFERENCES matriz_riesgo_areas(id) ON DELETE SET NULL,
+  proceso_id INTEGER REFERENCES matriz_riesgo_procesos(id) ON DELETE SET NULL,
+  detalle_riesgo TEXT,
+  factor VARCHAR(100),
+  probabilidad_opcion TEXT,
+  probabilidad_nivel VARCHAR(50), -- Muy baja, baja, etc
+  impacto_estimado DECIMAL(15,2),
+  impacto_nivel VARCHAR(50), -- Insignificante, etc
+  riesgo_inherente_valor VARCHAR(100),
+  riesgo_inherente_color VARCHAR(20),
+  
+  -- SECCIÓN II: IDENTIFICACIÓN DE CONTROLES
+  control_descripcion TEXT,
+  control_documento VARCHAR(250),
+  control_area_id INTEGER REFERENCES matriz_riesgo_areas(id) ON DELETE SET NULL,
+  control_periocidad VARCHAR(50),
+  control_operatividad VARCHAR(50),
+  control_tipo VARCHAR(50),
+  control_supervision VARCHAR(100),
+  control_frecuencia_oportuna BOOLEAN,
+  control_seguimiento_adecuado BOOLEAN,
+  riesgo_residual_valor DECIMAL(5,2),
+  riesgo_residual_color VARCHAR(20),
+  
+  -- SECCIÓN III: TRATAMIENTO E IMPLEMENTACIÓN
+  plan_accion TEXT,
+  area_responsable_id INTEGER REFERENCES matriz_riesgo_areas(id) ON DELETE SET NULL,
+  fecha_inicio DATE,
+  fecha_cierre DATE,
+  
+  estado VARCHAR(20) DEFAULT 'EDITANDO', -- EDITANDO, REGISTRADO
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABLAS PARA SCORING DE RIESGO
+CREATE TABLE IF NOT EXISTS scoring_riesgo (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+  id_entidad INTEGER REFERENCES entidades(id) ON DELETE CASCADE,
+  puntaje DECIMAL(5,2),
+  sustento TEXT,
+  categoria VARCHAR(50), -- Bajo, Medio, Alto
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABLAS PARA CANAL DE DENUNCIAS
+CREATE TABLE IF NOT EXISTS canal_denuncias (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER REFERENCES usuarios(id) ON DELETE SET NULL, -- Si es interna
+  anonimo BOOLEAN DEFAULT TRUE,
+  denunciante_nombre VARCHAR(250),
+  denunciante_contacto VARCHAR(250),
+  titulo VARCHAR(250),
+  detalle TEXT,
+  evidencia_url TEXT,
+  estado VARCHAR(50) DEFAULT 'RECIBIDO', -- RECIBIDO, EN PROCESO, CERRADO
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 

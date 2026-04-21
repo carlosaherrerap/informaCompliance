@@ -227,7 +227,7 @@ export default function SearchPage() {
     const title = entity.tipo === 'natural' ? `${entity.nombre} ${entity.ape_pat} ${entity.ape_mat}` : entity.nombre;
 
     doc.setFontSize(18);
-    doc.text("Ficha de Verificación - antiDark", 14, 20);
+    doc.text("Ficha de Verificación - INFORMAPERU", 14, 20);
     doc.setFontSize(12);
     doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
 
@@ -261,7 +261,7 @@ export default function SearchPage() {
                 <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary pointer-events-none mt-0.5">A</span>
               </div>
               <div>
-                <h1 className="font-black text-lg leading-tight uppercase tracking-tight text-slate-900 dark:text-white">AntiDark</h1>
+                <h1 className="font-black text-lg leading-tight uppercase tracking-tight text-slate-900 dark:text-white">INFORMAPERU</h1>
                 {/* <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">Ficha de Riesgo</p> */}
               </div>
             </div>
@@ -492,7 +492,7 @@ export default function SearchPage() {
                       <h5 className="font-black text-slate-900 dark:text-white uppercase text-xs tracking-widest border-l-4 border-primary pl-3">INFORMACION PERSONAL</h5>
                       <div className="space-y-1 bg-slate-50/30 dark:bg-slate-800/20 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/50">
                         <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
-                        {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : 'Femenino'} />}
+                        {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />}
                         <InfoRow label="Ubicación" value={`${detailData.entidad.distrito}, ${detailData.entidad.departamento}`} />
                         <InfoRow label="Dirección" value={detailData.entidad.direccion} />
                         <InfoRow label="Rubro" value={detailData.entidad.rubro} />
@@ -538,12 +538,18 @@ export default function SearchPage() {
                               <tr key={m.id} className="hover:bg-red-50/30 dark:hover:bg-red-900/5 transition-all group">
                                 <td className="px-6 py-4">
                                   <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[8px] font-black rounded uppercase">
-                                    {m.tipo_lista}
+                                    {m.tipo_lista_nombre || 'S/N'}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4">
                                   <p className="text-[11px] text-slate-700 dark:text-slate-300 font-bold leading-tight">{m.descripcion}</p>
-                                  <p className="text-[8px] text-slate-400 uppercase mt-1">Registrado el {new Date(m.fecha_registro).toLocaleDateString()}</p>
+                                  <p className="text-[8px] text-slate-400 uppercase mt-1">
+                                    Registrado el: {
+                                      m.fecha_registro && !m.fecha_registro.startsWith('1970') && !m.fecha_registro.startsWith('1969')
+                                        ? new Date(m.fecha_registro).toLocaleDateString('es-PE')
+                                        : 'PENDIENTE'
+                                    }
+                                  </p>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   {m.link ? (

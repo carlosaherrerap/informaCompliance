@@ -20,11 +20,11 @@ VALUES (1, 'PEP', 'Personas Políticamente Expuestas'),
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO usuarios (usuario, clave, correo, nombres, ape_pat, ape_mat, cargo, empresa)
-VALUES ('admin', crypt('admin2026', gen_salt('bf')), 'admin@local', 'Administrador', '', '', 'Admin', 'antiDark')
+VALUES ('admin', crypt('admin2026', gen_salt('bf')), 'admin@informaperu.com', 'Administrador', '', '', 'Admin', 'INFORMAPERU')
 ON CONFLICT (usuario) DO NOTHING;
 
 INSERT INTO usuarios (usuario, clave, correo, nombres, ape_pat, ape_mat, cargo, empresa)
-VALUES ('usuario1', crypt('informaperu', gen_salt('bf')), 'usuario1@local', 'Usuario Uno', '', '', 'Analista', 'antiDark')
+VALUES ('usuario1', crypt('informaperu', gen_salt('bf')), 'usuario1@informaperu.com', 'Usuario Uno', '', '', 'Analista', 'INFORMAPERU')
 ON CONFLICT (usuario) DO NOTHING;
 
 INSERT INTO rol (id_usuarios, nombre, descripcion, state)

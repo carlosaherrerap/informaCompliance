@@ -41,15 +41,21 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - ./api:/app
+      - /app/node_modules
 #Frontend de comunicacion con el usuario y el backend
   web:
     build: ./web
     environment:
       VITE_API_URL: ${VITE_API_URL}
     ports:
-      - "5173:5173"
+      - "5174:5173"
     depends_on:
       - api
+    volumes:
+      - ./web:/app
+      - /app/node_modules
 #Servicio de excel para comunicacion con el backend y generacion de archivos excel
   excel:
     build: ./excel-service

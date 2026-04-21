@@ -49,6 +49,39 @@ function sign(uid: number, email: string, role: string = 'user') {
   return jwt.sign({ uid, email, role }, jwtSecret, { expiresIn: "8h" });
 }
 
+function parseFecha(d: any) {
+  if (!d || d === "" || d === "null") return null;
+  
+  // Handle Excel Serial Numbers (days since 1900-01-01)
+  if (typeof d === 'number' || (!isNaN(Number(d)) && String(d).length < 7)) {
+    const serial = Number(d);
+    // Excel erroneously treats 1900 as a leap year, so we adjust if needed
+    // 25569 is the number of days between 1900-01-01 and 1970-01-01
+    const date = new Date((serial - 25569) * 86400 * 1000);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  // Handle String formats like MM/DD/YYYY or DD/MM/YYYY
+  const date = new Date(d);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+
+  // Fallback for custom formats if necessary (e.g. DD/MM/YYYY)
+  const parts = String(d).split(/[/-]/);
+  if (parts.length === 3) {
+    // Attempt MM/DD/YYYY (common excel output)
+    const d1 = new Date(`${parts[0]}/${parts[1]}/${parts[2]}`);
+    if (!isNaN(d1.getTime())) return d1;
+    // Attempt DD/MM/YYYY
+    const d2 = new Date(`${parts[1]}/${parts[0]}/${parts[2]}`);
+    if (!isNaN(d2.getTime())) return d2;
+  }
+
+  return null;
+}
+
+
 async function ensureUser(email: string, profile: any = {}): Promise<number> {
   const user = await pool.query("SELECT id FROM usuarios WHERE correo=$1 LIMIT 1", [email]);
   let userId: number;
@@ -142,7 +175,7 @@ app.get("/auth/google/callback", async (req, res) => {
       }
     }
 
-    const userRole = (email === 'admin@antidark.com' || email === 'admin') ? 'admin' : 'user';
+    const userRole = (email === 'admin@informaperu.com' || email === 'admin') ? 'admin' : 'user';
     const token = sign(uid, email, userRole);
     const frontend = redirect || "http://localhost:5173";
 
@@ -316,7 +349,7 @@ app.post("/auth/google", async (req, res) => {
     } else {
       userId = user.rows[0].id;
     }
-    const userRole = (email === 'admin@antidark.com' || email === 'admin') ? 'admin' : 'user';
+    const userRole = (email === 'admin@informaperu.com' || email === 'admin') ? 'admin' : 'user';
     const token = sign(userId, email, userRole);
     res.json({ token });
   } catch (e) {
@@ -395,7 +428,7 @@ app.post("/auth/login", async (req, res) => {
     if (tRow.rows.length === 0) {
       await pool.query("INSERT INTO token(id_usuarios, cant_actual) VALUES($1,$2)", [uid, 0]);
     }
-    const userRole = (email === 'admin@antidark.com' || usuario === 'admin') ? 'admin' : 'user';
+    const userRole = (email === 'admin@informaperu.com' || usuario === 'admin') ? 'admin' : 'user';
     const token = sign(uid, email, userRole);
     res.json({ token });
   } catch {
@@ -449,8 +482,8 @@ app.get("/search", requireAuth, async (req, res) => {
           (CASE WHEN $4 != '' AND (LOWER(e.documento) = $4 OR LOWER(e.documento) LIKE $8) THEN 1 ELSE 0 END)
         ) as match_count
       FROM entidades e
-      JOIN tipo_documento td ON td.id = e.id_tipo_documento
-      JOIN personas_naturales pn ON pn.id_entidades = e.id
+      LEFT JOIN tipo_documento td ON td.id = e.id_tipo_documento
+      LEFT JOIN personas_naturales pn ON pn.id_entidades = e.id
       WHERE NOT ${isSearching} OR (
         ($1 != '' AND LOWER(pn.nombre) LIKE $5) OR
         ($2 != '' AND LOWER(pn.ape_pat) LIKE $6) OR
@@ -473,8 +506,8 @@ app.get("/search", requireAuth, async (req, res) => {
           (CASE WHEN $4 != '' AND (LOWER(e.documento) = $4 OR LOWER(e.documento) LIKE $8) THEN 1 ELSE 0 END)
         ) as match_count
       FROM entidades e
-      JOIN tipo_documento td ON td.id = e.id_tipo_documento
-      JOIN personas_juridicas pj ON pj.id_entidades = e.id
+      LEFT JOIN tipo_documento td ON td.id = e.id_tipo_documento
+      LEFT JOIN personas_juridicas pj ON pj.id_entidades = e.id
       WHERE NOT ${isSearching} OR (
         ($1 != '' AND LOWER(pj.razon_social) LIKE $5) OR
         ($4 != '' AND LOWER(e.documento) LIKE $8)
@@ -487,7 +520,7 @@ app.get("/search", requireAuth, async (req, res) => {
       )
       SELECT * FROM all_results 
       ${isSearching ? 'WHERE score > 0' : ''}
-      ORDER BY score DESC, id ASC
+      ORDER BY match_count DESC, score DESC, id ASC
       LIMIT $9 OFFSET $10
     `;
 
@@ -621,20 +654,7 @@ app.post("/schedule", async (req, res) => {
   }
 });
 
-// Convierte fechas tipo DD-MM-YYYY o DD/MM/YYYY a formato ISO YYYY-MM-DD para PostgreSQL
-function parseFecha(fecha: string | undefined | null): string | null {
-  if (!fecha) return null;
-  const s = String(fecha).trim();
-  // Match DD-MM-YYYY or DD/MM/YYYY
-  const match = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
-  if (match) {
-    const [, day, month, year] = match;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-  // If already ISO format YYYY-MM-DD, return as-is
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  return null; // unknown format, skip to avoid DB error
-}
+
 
 async function resolveTipoDocumento(name: string): Promise<number | null> {
   if (!name) return null;
@@ -799,28 +819,307 @@ app.post("/operaciones", requireAuth, async (req: any, res) => {
       parseFecha(b.fec_operacion), b.lugar_operacion, b.modalidad_pago, b.tipo_moneda, b.monto_operacion || 0, b.tipo_operacion, b.nro_cuenta_1, b.nro_cuenta_2, b.nro_cuenta_3
     ]);
 
-    const opId = op.rows[0].id;
-
-    if (b.beneficiarios && Array.isArray(b.beneficiarios)) {
-      for (const ben of b.beneficiarios) {
-        await client.query(`
-          INSERT INTO beneficiarios_operacion (
-            id_registro_operacion, numero_beneficiario, apellidos_razon_social, id_tipo_doc, num_doc, fec_nac
-          ) VALUES ($1, $2, $3, $4, $5, $6)
-        `, [opId, ben.numero_beneficiario, ben.apellidos_razon_social, ben.id_tipo_doc || null, ben.num_doc, parseFecha(ben.fec_nac)]);
-      }
+    const id = op.rows[0].id;
+    const items = b.beneficiarios || [];
+    for (const item of items) {
+      await client.query(`
+        INSERT INTO beneficiarios_operacion (id_registro_operacion, numero_beneficiario, apellidos_razon_social, id_tipo_doc, num_doc, fec_nac)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [id, item.numero, item.apellidos, item.id_tipo_doc || null, item.documento, parseFecha(item.fecha_nac)]);
     }
 
     await client.query("COMMIT");
-    res.json({ id: opId });
+    res.json({ id });
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("Error creating operation:", err);
-    res.status(500).json({ error: "Error al registrar operación" });
+    res.status(500).json({ error: "Error al crear operación" });
   } finally {
     client.release();
   }
 });
 
+// MATRIZ DE RIESGOS - AREAS
+app.get("/matriz-riesgo/areas", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query("SELECT * FROM matriz_riesgo_areas WHERE id_usuario = $1 ORDER BY nombre", [req.uid]);
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener áreas" });
+  }
+});
 
-httpServer.listen(port, () => { });
+app.post("/matriz-riesgo/areas", requireAuth, async (req: any, res) => {
+  try {
+    const { nombre } = req.body;
+    const r = await pool.query("INSERT INTO matriz_riesgo_areas (id_usuario, nombre) VALUES ($1, $2) RETURNING *", [req.uid, nombre]);
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al crear área" });
+  }
+});
+
+app.delete("/matriz-riesgo/areas/:id", requireAuth, async (req: any, res) => {
+  try {
+    await pool.query("DELETE FROM matriz_riesgo_areas WHERE id = $1 AND id_usuario = $2", [req.params.id, req.uid]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al eliminar área" });
+  }
+});
+
+// MATRIZ DE RIESGOS - PROCESOS
+app.get("/matriz-riesgo/procesos", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query("SELECT * FROM matriz_riesgo_procesos WHERE id_usuario = $1 ORDER BY nombre", [req.uid]);
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener procesos" });
+  }
+});
+
+app.post("/matriz-riesgo/procesos", requireAuth, async (req: any, res) => {
+  try {
+    const { nombre } = req.body;
+    const r = await pool.query("INSERT INTO matriz_riesgo_procesos (id_usuario, nombre) VALUES ($1, $2) RETURNING *", [req.uid, nombre]);
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al crear proceso" });
+  }
+});
+
+app.delete("/matriz-riesgo/procesos/:id", requireAuth, async (req: any, res) => {
+  try {
+    await pool.query("DELETE FROM matriz_riesgo_procesos WHERE id = $1 AND id_usuario = $2", [req.params.id, req.uid]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al eliminar proceso" });
+  }
+});
+
+// MATRIZ DE RIESGOS - VINCULACIÓN
+app.get("/matriz-riesgo/links", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT ap.*, a.nombre as area_nombre, p.nombre as proceso_nombre 
+      FROM matriz_riesgo_area_proceso ap
+      JOIN matriz_riesgo_areas a ON a.id = ap.id_area
+      JOIN matriz_riesgo_procesos p ON p.id = ap.id_proceso
+      WHERE ap.id_usuario = $1
+    `, [req.uid]);
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener vínculos" });
+  }
+});
+
+app.post("/matriz-riesgo/links", requireAuth, async (req: any, res) => {
+  try {
+    const { id_area, id_proceso } = req.body;
+    const r = await pool.query(
+      "INSERT INTO matriz_riesgo_area_proceso (id_area, id_proceso, id_usuario) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING *",
+      [id_area, id_proceso, req.uid]
+    );
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al vincular" });
+  }
+});
+
+app.delete("/matriz-riesgo/links/:id", requireAuth, async (req: any, res) => {
+  try {
+    await pool.query("DELETE FROM matriz_riesgo_area_proceso WHERE id = $1 AND id_usuario = $2", [req.params.id, req.uid]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al desvincular" });
+  }
+});
+
+// MATRIZ DE RIESGOS - ANALISIS
+app.get("/matriz-riesgo/analisis", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT ra.*, a.nombre as area_nombre, p.nombre as proceso_nombre
+      FROM matriz_riesgo_analisis ra
+      LEFT JOIN matriz_riesgo_areas a ON a.id = ra.area_id
+      LEFT JOIN matriz_riesgo_procesos p ON p.id = ra.proceso_id
+      WHERE ra.id_usuario = $1
+      ORDER BY ra.fecha_creacion DESC
+    `, [req.uid]);
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener análisis" });
+  }
+});
+
+app.get("/matriz-riesgo/analisis/:id", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT ra.*, a.nombre as area_nombre, p.nombre as proceso_nombre
+      FROM matriz_riesgo_analisis ra
+      LEFT JOIN matriz_riesgo_areas a ON a.id = ra.area_id
+      LEFT JOIN matriz_riesgo_procesos p ON p.id = ra.proceso_id
+      WHERE ra.id = $1 AND ra.id_usuario = $2
+    `, [req.params.id, req.uid]);
+    if (r.rows.length === 0) return res.status(404).json({ error: "No encontrado" });
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener análisis" });
+  }
+});
+
+app.post("/matriz-riesgo/analisis", requireAuth, async (req: any, res) => {
+  try {
+    const b = req.body;
+    const r = await pool.query(`
+      INSERT INTO matriz_riesgo_analisis (
+        id_usuario, tipo_empresa, titulo, area_id, proceso_id, detalle_riesgo, factor,
+        probabilidad_opcion, probabilidad_nivel, impacto_estimado, impacto_nivel,
+        riesgo_inherente_valor, riesgo_inherente_color,
+        control_descripcion, control_documento, control_area_id, control_periocidad,
+        control_operatividad, control_tipo, control_supervision, control_frecuencia_oportuna,
+        control_seguimiento_adecuado, riesgo_residual_valor, riesgo_residual_color,
+        plan_accion, area_responsable_id, fecha_inicio, fecha_cierre, estado
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29
+      ) RETURNING id
+    `, [
+      req.uid, b.tipo_empresa, b.titulo, b.area_id, b.proceso_id, b.detalle_riesgo, b.factor,
+      b.probabilidad_opcion, b.probabilidad_nivel, b.impacto_estimado, b.impacto_nivel,
+      b.riesgo_inherente_valor, b.riesgo_inherente_color,
+      b.control_descripcion, b.control_documento, b.control_area_id, b.control_periocidad,
+      b.control_operatividad, b.control_tipo, b.control_supervision, b.control_frecuencia_oportuna,
+      b.control_seguimiento_adecuado, b.riesgo_residual_valor, b.riesgo_residual_color,
+      b.plan_accion, b.area_responsable_id, parseFecha(b.fecha_inicio), parseFecha(b.fecha_cierre), b.estado || 'EDITANDO'
+    ]);
+    res.json({ id: r.rows[0].id });
+  } catch (err) {
+    console.error("Error creating analysis:", err);
+    res.status(500).json({ error: "Error al crear análisis" });
+  }
+});
+
+app.patch("/matriz-riesgo/analisis/:id", requireAuth, async (req: any, res) => {
+  try {
+    const b = req.body;
+    await pool.query(`
+      UPDATE matriz_riesgo_analisis SET
+        tipo_empresa = $1, titulo = $2, area_id = $3, proceso_id = $4, detalle_riesgo = $5, factor = $6,
+        probabilidad_opcion = $7, probabilidad_nivel = $8, impacto_estimado = $9, impacto_nivel = $10,
+        riesgo_inherente_valor = $11, riesgo_inherente_color = $12,
+        control_descripcion = $13, control_documento = $14, control_area_id = $15, control_periocidad = $16,
+        control_operatividad = $17, control_tipo = $18, control_supervision = $19, control_frecuencia_oportuna = $20,
+        control_seguimiento_adecuado = $21, riesgo_residual_valor = $22, riesgo_residual_color = $23,
+        plan_accion = $24, area_responsable_id = $25, fecha_inicio = $26, fecha_cierre = $27, estado = $28
+      WHERE id = $29 AND id_usuario = $30
+    `, [
+      b.tipo_empresa, b.titulo, b.area_id, b.proceso_id, b.detalle_riesgo, b.factor,
+      b.probabilidad_opcion, b.probabilidad_nivel, b.impacto_estimado, b.impacto_nivel,
+      b.riesgo_inherente_valor, b.riesgo_inherente_color,
+      b.control_descripcion, b.control_documento, b.control_area_id, b.control_periocidad,
+      b.control_operatividad, b.control_tipo, b.control_supervision, b.control_frecuencia_oportuna,
+      b.control_seguimiento_adecuado, b.riesgo_residual_valor, b.riesgo_residual_color,
+      b.plan_accion, b.area_responsable_id, parseFecha(b.fecha_inicio), parseFecha(b.fecha_cierre), b.estado,
+      req.params.id, req.uid
+    ]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar análisis" });
+  }
+});
+
+// SCORING DE RIESGO
+app.get("/scoring", requireAuth, async (req: any, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT s.*, e.documento, COALESCE(pn.nombre || ' ' || pn.ape_pat, pj.razon_social) as entidad_nombre
+      FROM scoring_riesgo s
+      JOIN entidades e ON e.id = s.id_entidad
+      LEFT JOIN personas_naturales pn ON pn.id_entidades = e.id
+      LEFT JOIN personas_juridicas pj ON pj.id_entidades = e.id
+      WHERE s.id_usuario = $1
+      ORDER BY s.fecha_creacion DESC
+    `, [req.uid]);
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener scoring" });
+  }
+});
+
+app.post("/scoring", requireAuth, async (req: any, res) => {
+  try {
+    const { id_entidad, puntaje, sustento, categoria } = req.body;
+    const r = await pool.query(
+      "INSERT INTO scoring_riesgo (id_usuario, id_entidad, puntaje, sustento, categoria) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [req.uid, id_entidad, puntaje, sustento, categoria]
+    );
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al guardar scoring" });
+  }
+});
+
+// CANAL DE DENUNCIAS
+app.post("/denuncias", async (req, res) => {
+  try {
+    const { anonimo, nombre, contacto, titulo, detalle, evidencia_url } = req.body;
+    await pool.query(
+      "INSERT INTO canal_denuncias (anonimo, denunciante_nombre, denunciante_contacto, titulo, detalle, evidencia_url) VALUES ($1, $2, $3, $4, $5, $6)",
+      [anonimo, nombre, contacto, titulo, detalle, evidencia_url]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al enviar denuncia" });
+  }
+});
+
+app.get("/denuncias", requireAuth, async (req: any, res) => {
+  try {
+    if (req.userRole !== "admin") return res.status(403).json({ error: "Solo administradores" });
+    const r = await pool.query("SELECT * FROM canal_denuncias ORDER BY fecha_creacion DESC");
+    res.json(r.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener denuncias" });
+  }
+});
+
+app.patch("/denuncias/:id", requireAuth, async (req: any, res) => {
+  try {
+    if (req.userRole !== "admin") return res.status(403).json({ error: "Solo administradores" });
+    const { estado } = req.body;
+    await pool.query("UPDATE canal_denuncias SET estado = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $2", [estado, req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar denuncia" });
+  }
+});
+
+// REPORTE DE OPERACIONES (Analytics)
+app.get("/operaciones/stats", requireAuth, async (req: any, res) => {
+  try {
+    const stats = await pool.query(`
+      SELECT 
+        COUNT(*) as total_count,
+        SUM(monto_operacion) as total_volume,
+        tipo_moneda,
+        estado -- If we add estado to operations too
+      FROM registro_operaciones
+      WHERE id_usuario = $1
+      GROUP BY tipo_moneda, estado
+    `, [req.uid]);
+
+    const byOffice = await pool.query(`
+      SELECT oficina, COUNT(*), SUM(monto_operacion) as total
+      FROM registro_operaciones
+      WHERE id_usuario = $1
+      GROUP BY oficina
+    `, [req.uid]);
+
+    res.json({ summary: stats.rows, byOffice: byOffice.rows });
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener estadísticas" });
+  }
+});
+
+httpServer.listen(port, () => {
+ });

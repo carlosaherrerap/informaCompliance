@@ -60,16 +60,14 @@ export default function LoginPage() {
 
         {/* Logo e icono */}
         <div className="relative z-20">
-          <svg className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L12 22M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
+          <img src="/logo.png" alt="INFORMAPERU Logo" className="h-20 w-auto object-contain brightness-0 invert" />
         </div>
 
         {/* Titulo y slogan */}
         <div className="relative z-20 flex flex-col gap-6 mt-16 max-w-[60%]">
-          <h1 className="text-white font-bold leading-[1.1] tracking-tight flex flex-col gap-1">
-            <span className="text-base lg:text-lg font-medium opacity-80  tracking-widest">Bienvenido a ...</span>
-            <span className="text-[3rem] lg:text-[4.5rem] font-saintcarell">AntiDark!</span>
+          <h1 className="text-white font-black leading-[1.1] tracking-tight flex flex-col gap-1">
+            <span className="text-base lg:text-lg font-medium opacity-80 tracking-widest uppercase">Bienvenido a ...</span>
+            <span className="text-[3rem] lg:text-[4.5rem] uppercase font-black tracking-tighter">INFORMAPERU</span>
           </h1>
           <p className="text-white/90 text-lg lg:text-xl font-medium leading-relaxed mt-2 max-w-md">
             Software de prevencion de Riesgos, Automatizacion y programacion de busquedas. Para ti, para tu empresa, Somos la mejor opcion
@@ -138,7 +136,7 @@ export default function LoginPage() {
 
           {/* Form Footer */}
           <div className="flex justify-center mt-auto pt-12">
-            <p className="text-[#616f89]/70 text-xs font-semibold">© 2026 AntiDark. Todos los derechos reservados.</p>
+            <p className="text-[#616f89]/70 text-xs font-semibold">© 2026 INFORMAPERU. Todos los derechos reservados.</p>
           </div>
 
         </div>

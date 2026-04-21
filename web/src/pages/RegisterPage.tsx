@@ -36,7 +36,7 @@ export default function RegisterPage() {
             <div className="size-10 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
               <span className="material-symbols-outlined text-2xl">shield_person</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#111318]">antiDark</h1>
+            <h1 className="text-2xl font-black tracking-tight text-[#111318] uppercase">INFORMAPERU</h1>
           </div>
           <p className="text-[#616f89] text-sm font-medium">Crear cuenta</p>
         </div>

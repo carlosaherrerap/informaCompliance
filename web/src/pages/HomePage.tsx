@@ -17,13 +17,13 @@ export default function HomePage() {
 
   const modules = [
     { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
-    { name: "Matriz de Riesgos", icon: "grid_on", enabled: false },
-    { name: "Scoring de Riesgo", icon: "trending_up", enabled: false },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false },
+    { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
+    { name: "Scoring de Riesgo", icon: "trending_up", enabled: false, href: "/scoring" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false },
+
+    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
-    { name: "Mis Cursos", icon: "school", enabled: false }
   ];
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#111318] font-display">
@@ -33,7 +33,7 @@ export default function HomePage() {
             <span className="material-symbols-outlined">shield_person</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-tight">AntiDark</h1>
+            <h1 className="text-lg font-black leading-tight tracking-tighter uppercase text-slate-800 dark:text-white">INFORMAPERU</h1>
             <p className="text-xs text-[#616f89] font-medium">Prevencion y Deteccion</p>
           </div>
         </div>
