@@ -3,6 +3,7 @@ services:
     name: informaperu-backend
     env: docker
     dockerContext: ./api
+    dockerfilePath: Dockerfile
     plan: free
     region: ohio
     envVars:
