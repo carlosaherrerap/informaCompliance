@@ -12,5 +12,6 @@ WORKDIR /app
 COPY api/package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
+COPY db/ ./db
 EXPOSE 8080
 CMD ["node", "dist/index.js"]

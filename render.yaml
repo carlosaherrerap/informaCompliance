@@ -27,6 +27,18 @@ services:
     region: ohio
     ipAllowList: []
 
+  - type: static
+    name: informaperu-frontend
+    env: static
+    buildCommand: cd web && npm install && npm run build
+    staticPublishPath: ./web/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: informaperu-backend
+          property: host
+
 databases:
   - name: informaperu-db
     plan: free

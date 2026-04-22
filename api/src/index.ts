@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import Redis from "ioredis";
 import pkg from "pg";
 import { Issuer, generators, Client } from "openid-client";
+import fs from "fs";
+import path from "path";
 
 const { Pool } = pkg;
 
@@ -25,6 +27,40 @@ const jwtSecret = process.env.JWT_SECRET || "secret";
 
 const pool = new Pool({ connectionString: databaseUrl });
 const redis = new Redis(redisUrl);
+
+async function initDb() {
+  try {
+    const tableExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'usuarios'
+      );
+    `);
+
+    if (!tableExists.rows[0].exists) {
+      console.log("Initializing database schema...");
+      const initSqlPath = path.join(process.cwd(), "db", "init.sql");
+      const seedSqlPath = path.join(process.cwd(), "db", "seed.sql");
+
+      if (fs.existsSync(initSqlPath)) {
+        const initSql = fs.readFileSync(initSqlPath, "utf8");
+        await pool.query(initSql);
+        console.log("Schema initialized successfully.");
+      }
+
+      if (fs.existsSync(seedSqlPath)) {
+        const seedSql = fs.readFileSync(seedSqlPath, "utf8");
+        await pool.query(seedSql);
+        console.log("Seed data initialized successfully.");
+      }
+    }
+  } catch (err) {
+    console.error("Error initializing database:", err);
+  }
+}
+
+initDb();
 
 io.on("connection", (socket) => {
   socket.on("join", (uid) => {
