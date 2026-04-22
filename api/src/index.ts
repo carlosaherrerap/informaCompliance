@@ -12,8 +12,10 @@ import path from "path";
 const { Pool } = pkg;
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], allowedHeaders: ["Content-Type", "Authorization"] }));
 app.use(express.json());
+
+app.get("/", (req, res) => res.send("INFORMAPERU API Ready"));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -213,7 +215,7 @@ app.get("/auth/google/callback", async (req, res) => {
 
     const userRole = (email === 'admin@informaperu.com' || email === 'admin') ? 'admin' : 'user';
     const token = sign(uid, email, userRole);
-    const frontend = redirect || "http://localhost:5173";
+    const frontend = redirect || process.env.FRONTEND_URL || "http://localhost:5173";
 
     // Redirect to profile completion ONLY if newly created (no names in DB)
     const route = (isNew && !existing.rows[0]?.nombres) ? "/completar-perfil" : "/home";

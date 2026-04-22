@@ -25,7 +25,9 @@ services:
       - "6379:6379"
 #Api-backend de comunicacion con la base de datos, frontend y servicio de excel
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     environment:
       PORT: ${PORT}
       DATABASE_URL: ${DATABASE_URL}
