@@ -51,7 +51,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-overlapping-arcs" />
 
         {/* Imagen balanza de justicia - Cortada a la mitad en el borde derecho */}
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10 w-[500px] h-[500px] pointer-events-none select-none opacity-30" 
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10 w-[1500px] h-[1500px] pointer-events-none select-none opacity-30" 
              style={{ transform: 'translate(50%, -50%) rotate(-15deg)' }}>
           <img 
             src="/balanza.jpeg" 

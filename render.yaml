@@ -21,10 +21,7 @@ services:
           name: informaperu-redis
           property: connectionString
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: informaperu-frontend
-          property: host
+        value: https://informaperu-frontend.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -46,6 +43,8 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://informaperu-backend.onrender.com
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
 
 databases:
   - name: informaperu-db
