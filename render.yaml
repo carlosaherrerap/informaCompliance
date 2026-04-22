@@ -27,7 +27,7 @@ services:
     region: ohio
     ipAllowList: []
 
-  - type: static_site
+  - type: web
     name: informaperu-frontend
     env: static
     buildCommand: cd web && npm install && npm run build
