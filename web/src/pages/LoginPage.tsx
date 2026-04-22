@@ -38,7 +38,8 @@ export default function LoginPage() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-white font-display text-[#111318] relative">
 
       {/* Imagen base para el efecto cristal */}
-      <div className="absolute inset-0 w-full lg:w-[55%] bg-cover bg-center z-0" style={{ backgroundImage: "url('/bg-login.png')" }} />
+      {/* Imagen base para el efecto cristal */}
+      <div className="absolute inset-0 w-full lg:w-[55%] bg-cover bg-center z-0" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070&auto=format&fit=crop')" }} />
 
       {/* tipo crsital */}
       <div
@@ -49,12 +50,12 @@ export default function LoginPage() {
         {/* fondo css */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-overlapping-arcs" />
 
-        {/* Imagen balanza de justicia - lado derecho del panel */}
-        <div className="absolute bottom-0 right-[-5%] z-10 w-[65%] h-full pointer-events-none select-none">
+        {/* Imagen balanza de justicia - Ajustada según requerimientos */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[120%] h-full pointer-events-none select-none overflow-hidden opacity-30" style={{ transform: 'translate(-50%, -50%) rotate(-15deg)' }}>
           <img 
             src="/balanza.jpeg" 
             alt="scales of justice" 
-            className="w-full h-full object-contain object-bottom"
+            className="w-full h-full object-contain mix-blend-multiply"
           />
         </div>
 
@@ -67,7 +68,7 @@ export default function LoginPage() {
         <div className="relative z-20 flex flex-col gap-6 mt-16 max-w-[60%]">
           <h1 className="text-white font-black leading-[1.1] tracking-tight flex flex-col gap-1">
             <span className="text-base lg:text-lg font-medium opacity-80 tracking-widest uppercase">Bienvenido a ...</span>
-            <span className="text-[3rem] lg:text-[4.5rem] uppercase font-black tracking-tighter">INFORMAPERU</span>
+            <span className="text-[2.2rem] lg:text-[3.8rem] uppercase font-black tracking-tighter whitespace-nowrap">INFORMAPERU</span>
           </h1>
           <p className="text-white/90 text-lg lg:text-xl font-medium leading-relaxed mt-2 max-w-md">
             Software de prevencion de Riesgos, Automatizacion y programacion de busquedas. Para ti, para tu empresa, Somos la mejor opcion

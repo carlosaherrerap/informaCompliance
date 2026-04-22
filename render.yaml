@@ -34,10 +34,7 @@ services:
     staticPublishPath: ./web/dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: informaperu-backend
-          property: host
+        value: https://informaperu-backend.onrender.com
 
 databases:
   - name: informaperu-db
