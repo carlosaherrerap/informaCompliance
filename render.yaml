@@ -25,6 +25,12 @@ services:
           type: web
           name: informaperu-frontend
           property: host
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: OAUTH_CALLBACK_URL
+        value: https://informaperu-backend.onrender.com/auth/google/callback
 
   - type: redis
     name: informaperu-redis

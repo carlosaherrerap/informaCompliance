@@ -43,7 +43,7 @@ export default function RiskMatrixPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<RiskAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
-  const apiHost = "http://localhost:8080";
+  const apiHost = import.meta.env.VITE_API_URL || "http://localhost:8080";
   const token = localStorage.getItem("auth_token");
 
   useEffect(() => {

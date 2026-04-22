@@ -134,7 +134,7 @@ export default function RiskRegisterPage() {
     fecha_cierre: ""
   });
 
-  const apiHost = "http://localhost:8080";
+  const apiHost = import.meta.env.VITE_API_URL || "http://localhost:8080";
   const token = localStorage.getItem("auth_token");
 
   useEffect(() => {

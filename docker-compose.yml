@@ -28,6 +28,7 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
+    command: npm run dev
     environment:
       PORT: ${PORT}
       DATABASE_URL: ${DATABASE_URL}
