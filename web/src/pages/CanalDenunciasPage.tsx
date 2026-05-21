@@ -27,7 +27,7 @@ export default function CanalDenunciasPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (r.ok) setDenuncias(await r.json());
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function CanalDenunciasPage() {
           setView("admin");
           fetchDenuncias();
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -69,18 +69,18 @@ export default function CanalDenunciasPage() {
     try {
       const r = await fetch(`${apiUrl}/denuncias/${id}`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ estado: status })
       });
       if (r.ok) fetchDenuncias();
-    } catch {}
+    } catch { }
   };
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'RECIBIDO': return 'bg-blue-100 text-blue-600';
       case 'EN PROCESO': return 'bg-orange-100 text-orange-600';
       case 'CERRADO': return 'bg-green-100 text-green-600';
@@ -92,8 +92,9 @@ export default function CanalDenunciasPage() {
     <div className="font-display bg-slate-50 dark:bg-background-dark min-h-screen">
       <div className="flex h-screen overflow-hidden">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div className="p-6">
-            <h1 className="font-black text-xl uppercase text-primary tracking-tighter">INFORMAPERU</h1>
+          <div className="p-6 flex items-center gap-3">
+            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
+            <h1 className="font-black text-xl uppercase text-[#32508E] dark:text-white tracking-tighter">INFORMA PERÚ</h1>
           </div>
           <nav className="px-4 space-y-1">
             <Link to="/home" className="flex items-center gap-3 px-3 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
@@ -137,12 +138,12 @@ export default function CanalDenunciasPage() {
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-                      <input 
-                        type="checkbox" 
-                        id="anon" 
-                        checked={formData.anonimo} 
-                        onChange={e => setFormData({...formData, anonimo: e.target.checked})}
-                        className="size-5 accent-primary" 
+                      <input
+                        type="checkbox"
+                        id="anon"
+                        checked={formData.anonimo}
+                        onChange={e => setFormData({ ...formData, anonimo: e.target.checked })}
+                        className="size-5 accent-primary"
                       />
                       <label htmlFor="anon" className="text-xs font-black uppercase cursor-pointer">Denuncia Anónima</label>
                     </div>
@@ -151,28 +152,28 @@ export default function CanalDenunciasPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in-95">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre Completo</label>
-                          <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} placeholder="Ej: JUAN PEREZ" />
+                          <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.nombre} onChange={e => setFormData({ ...formData, nombre: e.target.value })} placeholder="Ej: JUAN PEREZ" />
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contacto (WhatsApp/Tel)</label>
-                          <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.contacto} onChange={e => setFormData({...formData, contacto: e.target.value})} placeholder="+51 999..." />
+                          <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.contacto} onChange={e => setFormData({ ...formData, contacto: e.target.value })} placeholder="+51 999..." />
                         </div>
                       </div>
                     )}
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Título del Reporte</label>
-                      <input required className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} placeholder="Ej: Sospecha de lavado de activos" />
+                      <input required className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.titulo} onChange={e => setFormData({ ...formData, titulo: e.target.value })} placeholder="Ej: Sospecha de lavado de activos" />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle de los Hechos</label>
-                      <textarea required rows={5} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-100 font-medium text-sm" value={formData.detalle} onChange={e => setFormData({...formData, detalle: e.target.value})} placeholder="Describa lo ocurrido con la mayor cantidad de detalles posible..." />
+                      <textarea required rows={5} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-100 font-medium text-sm" value={formData.detalle} onChange={e => setFormData({ ...formData, detalle: e.target.value })} placeholder="Describa lo ocurrido con la mayor cantidad de detalles posible..." />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evidencia (Link/Drive)</label>
-                      <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.evidencia_url} onChange={e => setFormData({...formData, evidencia_url: e.target.value})} placeholder="URL a fotos o documentos" />
+                      <input className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 font-bold text-sm" value={formData.evidencia_url} onChange={e => setFormData({ ...formData, evidencia_url: e.target.value })} placeholder="URL a fotos o documentos" />
                     </div>
 
                     <button disabled={loading} className="w-full py-5 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-red-200 dark:shadow-none hover:bg-red-700 transition-all">
@@ -225,6 +226,12 @@ export default function CanalDenunciasPage() {
                 </div>
               </div>
             )}
+
+            <footer className="py-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center mt-12 px-4 shrink-0">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+              </p>
+            </footer>
           </div>
         </main>
       </div>

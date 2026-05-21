@@ -26,7 +26,7 @@ export default function ScoringRiesgoPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (r.ok) setHistory(await r.json());
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -99,8 +99,9 @@ export default function ScoringRiesgoPage() {
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar (simplified) */}
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div className="p-6">
-            <h1 className="font-black text-xl uppercase text-primary tracking-tighter">INFORMAPERU</h1>
+          <div className="p-6 flex items-center gap-3">
+            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
+            <h1 className="font-black text-xl uppercase text-[#32508E] dark:text-white tracking-tighter">INFORMA PERÚ</h1>
           </div>
           <nav className="px-4 space-y-1">
             <Link to="/home" className="flex items-center gap-3 px-3 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
@@ -137,14 +138,14 @@ export default function ScoringRiesgoPage() {
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documento de Identidad (DNI/RUC)</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={qDoc} 
+                      <input
+                        type="text"
+                        value={qDoc}
                         onChange={e => setQDoc(e.target.value)}
                         placeholder="Ej: 1045678321"
                         className="flex-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-100 dark:border-slate-700 font-bold"
                       />
-                      <button 
+                      <button
                         onClick={handleSearch}
                         disabled={isSearching}
                         className="px-6 py-2 bg-primary text-white font-black rounded-xl text-xs uppercase hover:bg-blue-700 transition-all shadow-lg shadow-primary/20"
@@ -172,10 +173,10 @@ export default function ScoringRiesgoPage() {
                             <label className="text-[10px] font-black uppercase tracking-widest">Nivel de Riesgo (0-100)</label>
                             <span className="text-xl font-black text-primary">{score}</span>
                           </div>
-                          <input 
-                            type="range" 
-                            min="0" max="100" 
-                            value={score} 
+                          <input
+                            type="range"
+                            min="0" max="100"
+                            value={score}
                             onChange={e => {
                               const v = parseInt(e.target.value);
                               setScore(v);
@@ -194,7 +195,7 @@ export default function ScoringRiesgoPage() {
 
                         <div className="flex flex-col gap-2">
                           <label className="text-[10px] font-black uppercase tracking-widest">Sustento / Calificación</label>
-                          <textarea 
+                          <textarea
                             value={sustento}
                             onChange={e => setSustento(e.target.value)}
                             rows={3}
@@ -203,7 +204,7 @@ export default function ScoringRiesgoPage() {
                           />
                         </div>
 
-                        <button 
+                        <button
                           onClick={handleSaveScoring}
                           disabled={loading}
                           className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-slate-800 transition-all"
@@ -222,7 +223,7 @@ export default function ScoringRiesgoPage() {
                   <span className="material-symbols-outlined text-primary">history</span>
                   Historial de Evaluaciones
                 </h3>
-                
+
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                   {history.length === 0 ? (
                     <div className="text-center py-20 text-slate-300">
@@ -251,6 +252,12 @@ export default function ScoringRiesgoPage() {
               </section>
             </div>
           </div>
+
+          <footer className="py-8 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center px-4 shrink-0 mt-12">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+              DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+            </p>
+          </footer>
         </main>
       </div>
     </div>

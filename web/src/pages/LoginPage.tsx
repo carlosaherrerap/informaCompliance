@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       {/* Imagen base para el efecto cristal */}
       {/* Imagen base para el efecto cristal */}
-      <div className="absolute inset-0 w-full lg:w-[55%] bg-cover bg-center z-0" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2070&auto=format&fit=crop')" }} />
+      <div className="absolute inset-0 w-full lg:w-[55%] bg-cover bg-center z-0" style={{ backgroundImage: "url('/hero-login.png')" }} />
 
       {/* tipo crsital */}
       <div
@@ -51,28 +51,29 @@ export default function LoginPage() {
         <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-overlapping-arcs" />
 
         {/* Imagen balanza de justicia - Cortada a la mitad en el borde derecho */}
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10 w-[1500px] h-[1500px] pointer-events-none select-none opacity-30" 
-             style={{ transform: 'translate(50%, -50%) rotate(-15deg)' }}>
-          <img 
-            src="/balanza.jpeg" 
-            alt="scales of justice" 
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10 w-[1500px] h-[1500px] pointer-events-none select-none opacity-30"
+          style={{ transform: 'translate(50%, -50%) rotate(-15deg)' }}>
+          <img
+            src="/balanza.jpeg"
+            alt="scales of justice"
             className="w-full h-full object-contain mix-blend-multiply"
           />
         </div>
 
         {/* Logo e icono */}
         <div className="relative z-20">
-          <img src="/logo.png" alt="INFORMAPERU Logo" className="h-20 w-auto object-contain brightness-0 invert" />
+          <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-20 w-auto object-contain" />
         </div>
 
         {/* Titulo y slogan */}
         <div className="relative z-20 flex flex-col gap-6 mt-16 max-w-[60%]">
           <h1 className="text-white font-black leading-[1.1] tracking-tight flex flex-col gap-1">
             <span className="text-base lg:text-lg font-medium opacity-80 tracking-widest uppercase">Bienvenido a ...</span>
-            <span className="text-[2.2rem] lg:text-[3.8rem] uppercase font-black tracking-tighter whitespace-nowrap">INFORMAPERU</span>
+            <span className="text-[2.2rem] lg:text-[3.8rem] uppercase font-black tracking-tighter whitespace-nowrap logo-gradient-text">INFORMA PERÚ</span>
           </h1>
           <p className="text-white/90 text-lg lg:text-xl font-medium leading-relaxed mt-2 max-w-md">
-            Software de prevencion de Riesgos, Automatizacion y programacion de busquedas. Para ti, para tu empresa, Somos la mejor opcion
+            Software de prevención de Riesgos, lavado de activos, fraudes y corrupción.
+            Somos la mejor opción
           </p>
         </div>
 
@@ -138,7 +139,7 @@ export default function LoginPage() {
 
           {/* Form Footer */}
           <div className="flex justify-center mt-auto pt-12">
-            <p className="text-[#616f89]/70 text-xs font-semibold">© 2026 INFORMAPERU. Todos los derechos reservados.</p>
+            <p className="text-[#616f89]/70 text-xs font-semibold">© 2026 INFORMA PERÚ. Todos los derechos reservados.</p>
           </div>
 
         </div>
@@ -153,6 +154,16 @@ export default function LoginPage() {
           font-display: swap;
         }
         .font-saintcarell { font-family: 'SaintCarell', sans-serif; }
+        
+        .logo-gradient-text {
+          color: #32508E;
+          -webkit-background-clip: unset;
+          -webkit-text-fill-color: currentcolor;
+        }
+
+        @keyframes shine {
+          to { background-position: 200% center; }
+        }
 
         /* Minimal arc lines to simulate the reference left background */
         .bg-overlapping-arcs {

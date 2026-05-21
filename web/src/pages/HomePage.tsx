@@ -29,12 +29,10 @@ export default function HomePage() {
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#111318] font-display">
       <header className="h-16 bg-white dark:bg-slate-900 border-b border-[#dbdfe6] flex items-center justify-between px-8">
         <div className="flex items-center gap-3">
-          <div className="bg-primary size-10 rounded-lg flex items-center justify-center text-white">
-            <span className="material-symbols-outlined">shield_person</span>
-          </div>
+          <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-10 w-auto object-contain" />
           <div>
-            <h1 className="text-lg font-black leading-tight tracking-tighter uppercase text-slate-800 dark:text-white">INFORMAPERU</h1>
-            <p className="text-xs text-[#616f89] font-medium">Prevencion y Deteccion</p>
+            <h1 className="text-lg font-black leading-tight tracking-tighter uppercase text-[#32508E] dark:text-white">INFORMA PERÚ</h1>
+            <p className="text-xs text-[#616f89] font-medium uppercase tracking-wider">Prevención y Detección</p>
           </div>
         </div>
         <button className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg px-3 py-2" onClick={() => navigate("/perfil")}>
@@ -59,6 +57,12 @@ export default function HomePage() {
             </button>
           ))}
         </div>
+
+        <footer className="py-8 border-t border-[#dbdfe6] dark:border-slate-800 flex items-center justify-center mt-12">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+            DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+          </p>
+        </footer>
       </main>
     </div>
   );

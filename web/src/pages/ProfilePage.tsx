@@ -45,12 +45,9 @@ export default function ProfilePage() {
       <div className="flex min-h-screen">
         <aside className="w-64 bg-white dark:bg-slate-900 border-r border-[#dbdfe6] dark:border-slate-800 flex flex-col sticky top-0 h-screen">
           <div className="p-6 flex items-center gap-3">
-            <div className="relative size-10 bg-primary/10 rounded-xl flex items-center justify-center border-2 border-primary/20">
-              <span className="material-symbols-outlined text-primary text-2xl font-black">extension</span>
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary pointer-events-none mt-0.5">A</span>
-            </div>
+            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
             <div>
-              <h1 className="text-[#111318] dark:text-white text-lg font-black tracking-tight uppercase">INFORMAPERU</h1>
+              <h1 className="text-[#32508E] dark:text-white text-lg font-black tracking-tight uppercase">INFORMA PERÚ</h1>
               <p className="text-[#616f89] text-[9px] font-bold uppercase tracking-widest opacity-60">PERFIL</p>
             </div>
           </div>
@@ -146,12 +143,18 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          <footer className="py-8 border-t border-[#dbdfe6] dark:border-slate-800 flex items-center justify-center mt-12">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+              DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+            </p>
+          </footer>
         </main>
       </div>
       <style>{`
         .active-nav { background-color: rgba(15, 73, 189, 0.08); color: #0f49bd; border-right: 4px solid #0f49bd; }
         .accent-border { border-top: 4px solid #0f49bd; }
       `}</style>
-    </div>
+    </div >
   );
 }

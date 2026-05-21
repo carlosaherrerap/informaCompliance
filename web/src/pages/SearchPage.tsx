@@ -227,7 +227,7 @@ export default function SearchPage() {
     const title = entity.tipo === 'natural' ? `${entity.nombre} ${entity.ape_pat} ${entity.ape_mat}` : entity.nombre;
 
     doc.setFontSize(18);
-    doc.text("Ficha de Verificación - INFORMAPERU", 14, 20);
+    doc.text("Ficha de Verificación - INFORMA PERÚ", 14, 20);
     doc.setFontSize(12);
     doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
 
@@ -256,13 +256,9 @@ export default function SearchPage() {
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative size-10 bg-primary/10 rounded-xl flex items-center justify-center border-2 border-primary/20">
-                <span className="material-symbols-outlined text-primary text-2xl font-black">extension</span>
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary pointer-events-none mt-0.5">A</span>
-              </div>
+              <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
               <div>
-                <h1 className="font-black text-lg leading-tight uppercase tracking-tight text-slate-900 dark:text-white">INFORMAPERU</h1>
-                {/* <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">Ficha de Riesgo</p> */}
+                <h1 className="font-black text-lg leading-tight uppercase tracking-tight text-[#32508E] dark:text-white">INFORMA PERÚ</h1>
               </div>
             </div>
             <button className="lg:hidden text-slate-400" onClick={() => setIsSidebarOpen(false)}>
@@ -299,19 +295,36 @@ export default function SearchPage() {
             </div>
             <div className="flex items-center gap-3 sm:gap-4 relative">
               <div className="flex items-center gap-3 sm:gap-4 relative">
-                <button onClick={downloadMassiveTemplate} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-500 font-bold text-[10px] uppercase hover:bg-slate-100 transition-all border border-slate-200 dark:border-slate-700">
-                  <span className="material-symbols-outlined text-sm">download</span>
-                  <span className="hidden sm:inline">Plantilla</span>
-                </button>
+                <div className="group relative">
+                  <button className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase hover:bg-blue-100 transition-all border border-blue-200 dark:border-blue-800">
+                    <span className="material-symbols-outlined text-sm">verified</span>
+                    <span>DDA</span>
+                  </button>
+                  <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-[100] pointer-events-none uppercase tracking-widest">
+                    DEBIDA DILIGENCIA AMPLIADA
+                  </div>
+                </div>
 
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400 font-bold text-[10px] uppercase hover:bg-green-100 transition-all border border-green-200 dark:border-green-800" onClick={() => (document.getElementById('massive-upload') as HTMLInputElement)?.click()}>
-                  <span className="material-symbols-outlined text-sm">upload_file</span>
-                  <span className="hidden sm:inline">Busqueda Masiva</span>
+                <div className="relative group/massive">
+                  <button className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400 font-bold text-[10px] uppercase hover:bg-green-100 transition-all border border-green-200 dark:border-green-800">
+                    <span className="material-symbols-outlined text-sm">upload_file</span>
+                    <span className="hidden sm:inline">Busqueda Masiva</span>
+                  </button>
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl opacity-0 group-hover/massive:opacity-100 invisible group-hover/massive:visible transition-all z-[100] overflow-hidden">
+                    <button onClick={downloadMassiveTemplate} className="w-full flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-50 transition-colors">
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      Descargar Plantilla
+                    </button>
+                    <button onClick={() => (document.getElementById('massive-upload') as HTMLInputElement)?.click()} className="w-full flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
+                      <span className="material-symbols-outlined text-sm">publish</span>
+                      Cargar Base
+                    </button>
+                  </div>
                   <input id="massive-upload" type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleMassiveSearch(file);
                   }} />
-                </button>
+                </div>
 
                 <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 font-bold text-[10px] uppercase hover:bg-primary/10 hover:text-primary transition-all border border-slate-200 dark:border-slate-700" onClick={() => setIsScheduleModalOpen(true)}>
                   <span className="material-symbols-outlined text-sm">calendar_add_on</span>
@@ -320,7 +333,7 @@ export default function SearchPage() {
 
                 <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
                   <span className="material-symbols-outlined text-primary text-sm">database</span>
-                  <span className="text-primary text-[10px] font-black uppercase">{tokens ?? "-"} tokens</span>
+                  <span className="text-primary text-[10px] font-black uppercase">{tokens ?? "-"} busqueda</span>
                 </div>
 
                 <div className="flex items-center gap-2 relative">
@@ -364,9 +377,8 @@ export default function SearchPage() {
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8">
             <section>
-              <div className="mb-6">
-                <h2 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Motor de Busqueda </h2>
-                {/* <p className="text-slate-500 mt-1 max-w-2xl text-sm font-medium">Búsqueda cruzada por nombres, apellidos y documentos con ranking de relevancia inteligente.</p> */}
+              <div className="mb-6 text-center lg:text-left">
+                <h2 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Listas Negativas </h2>
               </div>
 
               <div className="bg-white dark:bg-slate-900 p-4 lg:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/50">
@@ -435,6 +447,12 @@ export default function SearchPage() {
                 </div>
               )}
             </section>
+
+            <footer className="py-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center mt-12">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+              </p>
+            </footer>
           </div>
         </main>
       </div>
@@ -481,7 +499,7 @@ export default function SearchPage() {
                     <div className="bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
                       <span className="material-symbols-outlined text-green-500 text-xl">database</span>
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Tokens Restantes</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Busquedas Restantes</p>
                         <p className="text-lg font-black text-primary leading-none">{tokens}</p>
                       </div>
                     </div>
@@ -599,10 +617,19 @@ export default function SearchPage() {
 }
 
 function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onDetail: (id: number) => void, onPdf: (e: any) => void, isSearching: boolean }) {
-  if (data.length === 0) return (
-    <div className="flex flex-col items-center justify-center p-16 text-center gap-2">
-      <span className="material-symbols-outlined text-3xl text-slate-200">folder_open</span>
-      <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] italic">Sin hallazgos en esta categoría</p>
+  const hasExactMatch = data.some(r => r.match_count >= 4);
+
+  if (data.length === 0 || (isSearching && !hasExactMatch)) return (
+    <div className="flex flex-col items-center justify-center p-16 text-center gap-6">
+      <div className="flex flex-col items-center gap-2">
+        <span className="material-symbols-outlined text-5xl text-red-100 dark:text-red-900/20 text-red-500/20">search_off</span>
+        <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">No se encontraron resultados exactos</h4>
+        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] italic max-w-xs">No hay registros que coincidan al 100% con los criterios buscados. Revisa las sugerencias por similitud debajo.</p>
+      </div>
+      <button onClick={() => window.print()} className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg">
+        <span className="material-symbols-outlined text-sm">print</span>
+        Imprimir 0 Resultados
+      </button>
     </div>
   );
 
@@ -624,7 +651,7 @@ function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onD
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${r.match_count >= 4 ? 'bg-primary/10 text-primary border border-primary/20' :
                   r.match_count === 3 ? 'bg-blue-100 text-blue-600 border border-blue-200' :
                     r.match_count === 2 ? 'bg-yellow-100 text-yellow-600 border border-yellow-200' :
-                      'bg-slate-100 text-slate-500 border border-slate-200'
+                      'bg-red-50 text-red-600 border border-red-200'
                   }`}>
                   {r.match_count >= 4 ? 'COINCIDENCIA TOTAL' :
                     r.match_count === 3 ? 'COINCIDENCIA ALTA' :

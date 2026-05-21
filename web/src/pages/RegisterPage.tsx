@@ -32,11 +32,9 @@ export default function RegisterPage() {
     <div className="relative min-h-screen flex flex-col items-center justify-center p-6 bg-mesh font-display bg-background-light dark:bg-background-dark text-[#111318]">
       <div className="w-full max-w-[480px] flex flex-col gap-8">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-3 text-primary">
-            <div className="size-10 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-2xl">shield_person</span>
-            </div>
-            <h1 className="text-2xl font-black tracking-tight text-[#111318] uppercase">INFORMAPERU</h1>
+          <div className="flex flex-col items-center gap-4">
+            <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-16 w-auto object-contain" />
+            <h1 className="text-2xl font-black tracking-tight text-[#32508E] uppercase">INFORMA PERÚ</h1>
           </div>
           <p className="text-[#616f89] text-sm font-medium">Crear cuenta</p>
         </div>
@@ -79,6 +77,12 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      <footer className="w-full py-8 flex items-center justify-center p-4 border-t border-[#f0f2f4] mt-12 bg-white/50">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+          DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+        </p>
+      </footer>
       <style>{`
         .input-side-accent { border-left: 3px solid transparent; transition: border-color 0.2s ease; }
         .input-side-accent:focus-within { border-left-color: #0f49bd; }

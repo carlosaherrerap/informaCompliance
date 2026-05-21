@@ -16,7 +16,7 @@ export default function ReporteOperacionesPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (r.ok) setStats(await r.json());
-      } catch {}
+      } catch { }
       setLoading(false);
     };
     fetchStats();
@@ -28,8 +28,9 @@ export default function ReporteOperacionesPage() {
     <div className="font-display bg-slate-50 dark:bg-background-dark min-h-screen">
       <div className="flex h-screen overflow-hidden">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div className="p-6">
-            <h1 className="font-black text-xl uppercase text-primary tracking-tighter">INFORMAPERU</h1>
+          <div className="p-6 flex items-center gap-3">
+            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
+            <h1 className="font-black text-lg uppercase text-[#32508E] dark:text-white tracking-tighter">INFORMA PERÚ</h1>
           </div>
           <nav className="px-4 space-y-1">
             <Link to="/home" className="flex items-center gap-3 px-3 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
@@ -66,11 +67,11 @@ export default function ReporteOperacionesPage() {
               </div>
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2rem] shadow-sm">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Volumen Total (PEN)</p>
-                <p className="text-3xl font-black">S/ {Number(stats?.summary?.find((s:any)=>s.tipo_moneda==='PEN')?.total_volume || 0).toLocaleString()}</p>
+                <p className="text-3xl font-black">S/ {Number(stats?.summary?.find((s: any) => s.tipo_moneda === 'PEN')?.total_volume || 0).toLocaleString()}</p>
               </div>
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2rem] shadow-sm">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Volumen Total (USD)</p>
-                <p className="text-3xl font-black">$ {Number(stats?.summary?.find((s:any)=>s.tipo_moneda==='USD')?.total_volume || 0).toLocaleString()}</p>
+                <p className="text-3xl font-black">$ {Number(stats?.summary?.find((s: any) => s.tipo_moneda === 'USD')?.total_volume || 0).toLocaleString()}</p>
               </div>
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2rem] shadow-sm">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Oficinas Activas</p>
@@ -86,7 +87,7 @@ export default function ReporteOperacionesPage() {
                   Volumen por Oficina
                 </h3>
                 <div className="space-y-4">
-                  {stats?.byOffice?.map((off:any, idx:number) => (
+                  {stats?.byOffice?.map((off: any, idx: number) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                       <div>
                         <p className="text-xs font-black uppercase">{off.oficina}</p>
@@ -118,7 +119,7 @@ export default function ReporteOperacionesPage() {
                         </div>
                         <div className="w-full bg-primary/20 rounded-t-lg transition-all group-hover:bg-primary" style={{ height: `${v}%` }}></div>
                         <div className="text-[8px] font-black opacity-30 uppercase mt-2 text-center">
-                          {['L','M','X','J','V','S','D'][i]}
+                          {['L', 'M', 'X', 'J', 'V', 'S', 'D'][i]}
                         </div>
                       </div>
                     ))}
@@ -133,6 +134,12 @@ export default function ReporteOperacionesPage() {
               </section>
             </div>
           </div>
+
+          <footer className="py-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center mt-12 px-4 shrink-0">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+              DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+            </p>
+          </footer>
         </main>
       </div>
     </div>
