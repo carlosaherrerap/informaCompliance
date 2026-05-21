@@ -28,6 +28,7 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
+      target: development
     command: npm run dev
     environment:
       PORT: ${PORT}

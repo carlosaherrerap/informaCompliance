@@ -1160,4 +1160,5 @@ app.get("/operaciones/stats", requireAuth, async (req: any, res) => {
 });
 
 httpServer.listen(port, () => {
- });
+  console.log(`Server running on port ${port}`);
+});
