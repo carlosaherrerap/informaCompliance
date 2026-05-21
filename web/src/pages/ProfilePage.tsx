@@ -45,11 +45,7 @@ export default function ProfilePage() {
       <div className="flex min-h-screen">
         <aside className="w-64 bg-white dark:bg-slate-900 border-r border-[#dbdfe6] dark:border-slate-800 flex flex-col sticky top-0 h-screen">
           <div className="p-6 flex items-center gap-3">
-            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
-            <div>
-              <h1 className="text-[#32508E] dark:text-white text-lg font-black tracking-tight uppercase">INFORMA PERÚ</h1>
-              <p className="text-[#616f89] text-[9px] font-bold uppercase tracking-widest opacity-60">PERFIL</p>
-            </div>
+            <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
           </div>
           <nav className="flex-1 mt-4 px-3 space-y-1">
             <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" to="/busqueda">
@@ -70,13 +66,17 @@ export default function ProfilePage() {
         </aside>
 
         <main className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full">
-          <header className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight text-[#111318] dark:text-white uppercase">Mi Perfil</h2>
-              {/* <p className="text-[#616f89] text-sm font-medium">Gestiona tu cuenta y datos de acceso.</p> */}
+          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0 mb-8 -mx-8">
+            <div className="flex items-center gap-8">
+              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
+              <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l border-slate-100 pl-8">
+                <span>INICIO</span>
+                <span className="material-symbols-outlined text-[10px]">chevron_right</span>
+                <span className="text-primary font-bold">MI PERFIL</span>
+              </div>
             </div>
             <div className="flex gap-3">
-              <button className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-[#dbdfe6] dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-[#111318] dark:text-white hover:bg-gray-50 dark:hover:bg-slate-750 transition-colors shadow-sm">Descartar</button>
+              <button className="px-5 py-2.5 rounded-xl bg-white border border-[#dbdfe6] text-[10px] font-black uppercase tracking-widest text-[#111318] hover:bg-gray-50 transition-colors shadow-sm">Descartar</button>
               <button className="px-5 py-2.5 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0d3ea1] transition-all shadow-xl shadow-primary/20">Guardar Cambios</button>
             </div>
           </header>
@@ -144,9 +144,9 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <footer className="py-8 border-t border-[#dbdfe6] dark:border-slate-800 flex items-center justify-center mt-12">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
-              DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+          <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12 overflow-hidden">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
+              @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
             </p>
           </footer>
         </main>

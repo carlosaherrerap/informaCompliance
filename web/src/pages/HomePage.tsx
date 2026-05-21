@@ -27,20 +27,8 @@ export default function HomePage() {
   ];
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#111318] font-display">
-      <header className="h-16 bg-white dark:bg-slate-900 border-b border-[#dbdfe6] flex items-center justify-between px-8">
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-10 w-auto object-contain" />
-          <div>
-            <h1 className="text-lg font-black leading-tight tracking-tighter uppercase text-[#32508E] dark:text-white">INFORMA PERÚ</h1>
-            <p className="text-xs text-[#616f89] font-medium uppercase tracking-wider">Prevención y Detección</p>
-          </div>
-        </div>
-        <button className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg px-3 py-2" onClick={() => navigate("/perfil")}>
-          <div className="w-8 h-8 rounded-full bg-slate-300 overflow-hidden">
-            <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2bfsjb0Bxscts3Po_3RkowlFbkon2tIl1sNMkI6qh8vf6IRcEZdwZdO4Pt9QCT8VJ-aWzIvgIbbYpHMPx61jtVaOoVGqbvXUFyebBm5OIXeLQN624ZTbMrs-plxctvukKt2rnMijp_HTrkfIipWsGeQQ-FuJyXIKwfknDWiIk-v7FJ699Pj5qP59h7YLFg2-aGXwYObatc-4MTcvsyj98Td-C6yYFyMAevJ7JJzBJDzv7CbpvKAg8-0MRm_OKcD6TE2wwX8ukhxE" alt="avatar" />
-          </div>
-          <span className="text-sm font-semibold">MI PORTAL</span>
-        </button>
+      <header className="h-20 bg-white border-b border-slate-100 flex items-center px-8 shrink-0">
+        <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ Logo" className="h-12 w-auto object-contain" />
       </header>
       <main className="max-w-6xl mx-auto p-8">
         <h2 className="text-2xl font-black mb-6">MODULOS DEL SISTEMA</h2>
@@ -58,9 +46,9 @@ export default function HomePage() {
           ))}
         </div>
 
-        <footer className="py-8 border-t border-[#dbdfe6] dark:border-slate-800 flex items-center justify-center mt-12">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
-            DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+        <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
+            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
           </p>
         </footer>
       </main>

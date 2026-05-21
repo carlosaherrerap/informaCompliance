@@ -29,65 +29,68 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center p-6 bg-mesh font-display bg-background-light dark:bg-background-dark text-[#111318]">
-      <div className="w-full max-w-[480px] flex flex-col gap-8">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex flex-col items-center gap-4">
-            <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-16 w-auto object-contain" />
-            <h1 className="text-2xl font-black tracking-tight text-[#32508E] uppercase">INFORMA PERÚ</h1>
-          </div>
-          <p className="text-[#616f89] text-sm font-medium">Crear cuenta</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#f0f2f4] overflow-hidden">
-          <div className="p-8 sm:p-10 flex flex-col gap-8">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-[#111318] text-2xl font-bold leading-tight">Regístrate</h2>
-              <p className="text-[#616f89] text-sm">Completa tus datos</p>
-            </div>
-            <form className="flex flex-col gap-5" onSubmit={submit}>
-              <div className="flex flex-col gap-2">
-                <label className="text-[#111318] text-sm font-semibold">Usuario</label>
-                <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
-                  <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">person</span>
-                  <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" placeholder="usuario" value={usuario} onChange={(e) => setUsuario(e.target.value)} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[#111318] text-sm font-semibold">Correo</label>
-                <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
-                  <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">mail</span>
-                  <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" placeholder="correo@dominio.com" value={correo} onChange={(e) => setCorreo(e.target.value)} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[#111318] text-sm font-semibold">Contraseña</label>
-                <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
-                  <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">lock</span>
-                  <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" type="password" placeholder="••••••••" value={clave} onChange={(e) => setClave(e.target.value)} />
-                </div>
-              </div>
-              {error && <div className="text-red-600 text-sm">{error}</div>}
-              {msg && <div className="text-green-600 text-sm">{msg}</div>}
-              <button className="w-full h-12 bg-primary text-white font-bold rounded-lg hover:bg-[#0d3ea1] transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-2" type="submit">
-                <span>Crear Cuenta</span>
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </button>
-              <button className="w-full h-11 border border-[#dbdfe6] rounded-lg font-bold text-sm hover:bg-slate-50" type="button" onClick={() => navigate("/login")}>Ya tengo cuenta</button>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div className="relative min-h-screen flex flex-col bg-slate-50 font-display text-[#111318]">
+      {/* Header Global */}
+      <header className="h-20 bg-white border-b border-slate-100 flex items-center px-8 shrink-0 z-20">
+        <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
+      </header>
 
-      <footer className="w-full py-8 flex items-center justify-center p-4 border-t border-[#f0f2f4] mt-12 bg-white/50">
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
-          DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
-        </p>
-      </footer>
-      <style>{`
+      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-mesh">
+        <div className="w-full max-w-[480px] flex flex-col gap-8">
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-[#32508E] text-[10px] font-black uppercase tracking-[0.2em]">Crear una nueva cuenta</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#f0f2f4] overflow-hidden">
+            <div className="p-8 sm:p-10 flex flex-col gap-8">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-[#111318] text-2xl font-bold leading-tight">Regístrate</h2>
+                <p className="text-[#616f89] text-sm">Completa tus datos</p>
+              </div>
+              <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[#111318] text-sm font-semibold">Usuario</label>
+                  <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
+                    <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">person</span>
+                    <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" placeholder="usuario" value={usuario} onChange={(e) => setUsuario(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[#111318] text-sm font-semibold">Correo</label>
+                  <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
+                    <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">mail</span>
+                    <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" placeholder="correo@dominio.com" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[#111318] text-sm font-semibold">Contraseña</label>
+                  <div className="input-side-accent flex items-center bg-white border border-[#dbdfe6] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10">
+                    <span className="material-symbols-outlined text-[#616f89] ml-3 text-xl">lock</span>
+                    <input className="w-full border-none focus:ring-0 text-sm py-3 px-3 placeholder:text-[#aab3c1]" type="password" placeholder="••••••••" value={clave} onChange={(e) => setClave(e.target.value)} />
+                  </div>
+                </div>
+                {error && <div className="text-red-600 text-sm">{error}</div>}
+                {msg && <div className="text-green-600 text-sm">{msg}</div>}
+                <button className="w-full h-12 bg-primary text-white font-bold rounded-lg hover:bg-[#0d3ea1] transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-2" type="submit">
+                  <span>Crear Cuenta</span>
+                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                </button>
+                <button className="w-full h-11 border border-[#dbdfe6] rounded-lg font-bold text-sm hover:bg-slate-50" type="button" onClick={() => navigate("/login")}>Ya tengo cuenta</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <footer className="w-full py-10 flex items-center justify-center p-4 border-t border-slate-100 bg-white">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl">
+            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+          </p>
+        </footer>
+        <style>{`
         .input-side-accent { border-left: 3px solid transparent; transition: border-color 0.2s ease; }
         .input-side-accent:focus-within { border-left-color: #0f49bd; }
         .bg-mesh { background-color: #f6f6f8; background-image: radial-gradient(at 0% 0%, rgba(15, 73, 189, 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 73, 189, 0.05) 0px, transparent 50%); }
       `}</style>
+      </div>
     </div>
   );
 }

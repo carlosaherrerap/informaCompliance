@@ -29,8 +29,7 @@ export default function ReporteOperacionesPage() {
       <div className="flex h-screen overflow-hidden">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 flex items-center gap-3">
-            <img src="/logo.png" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
-            <h1 className="font-black text-lg uppercase text-[#32508E] dark:text-white tracking-tighter">INFORMA PERÚ</h1>
+            <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
           </div>
           <nav className="px-4 space-y-1">
             <Link to="/home" className="flex items-center gap-3 px-3 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
@@ -41,12 +40,17 @@ export default function ReporteOperacionesPage() {
         </aside>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8">
-            <div className="flex items-center gap-3">
-              <button className="lg:hidden" onClick={() => setIsSidebarOpen(true)}>
-                <span className="material-symbols-outlined">menu</span>
-              </button>
-              <h2 className="font-black text-xs uppercase tracking-[0.2em] text-slate-400">Reporte de Operaciones</h2>
+          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 shrink-0 z-20">
+            <div className="flex items-center gap-4 lg:gap-8">
+              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 lg:h-12 w-auto object-contain flex-shrink-0" />
+              <div className="flex items-center gap-2 lg:gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l border-slate-100 pl-4 lg:pl-8">
+                <button className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600" onClick={() => setIsSidebarOpen(true)}>
+                  <span className="material-symbols-outlined">menu</span>
+                </button>
+                <Link className="hover:text-primary cursor-pointer hidden sm:inline" to="/home">INICIO</Link>
+                <span className="material-symbols-outlined text-base hidden sm:inline">chevron_right</span>
+                <span className="text-primary font-bold">REPORTE DE OPERACIONES</span>
+              </div>
             </div>
             <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
               <span className="material-symbols-outlined text-sm">download</span>
@@ -135,9 +139,9 @@ export default function ReporteOperacionesPage() {
             </div>
           </div>
 
-          <footer className="py-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center mt-12 px-4 shrink-0">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
-              DERECHOS DE AUTOR © 2026. DESARROLLADO POR INFORMA PERU TEAM TEC.
+          <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12 px-4 shrink-0">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
+              @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
             </p>
           </footer>
         </main>

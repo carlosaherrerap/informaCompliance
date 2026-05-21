@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -9,9 +9,28 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Variable para editar el porcentaje de la transparencia del fondo azul
-  // (0.0 es totalmente transparente, 1.0 es color sólido)
-  const transparenciaAzul = 0.85;
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = [
+    {
+      img: "/slide-1.jpg",
+      text: "Software de prevención de Riesgos, lavado de activos, fraudes y corrupción. Somos la mejor opción"
+    },
+    {
+      img: "/slide-2.jpg",
+      text: "Protección integral para tu empresa con tecnología de vanguardia"
+    },
+    {
+      img: "/slide-3.jpg",
+      text: "Automatización y seguridad en cada paso de tu debida diligencia"
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,142 +54,136 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white font-display text-[#111318] relative">
+    <div className="flex flex-col h-screen overflow-hidden bg-white font-sans text-base text-[#111318]">
 
-      {/* Imagen base para el efecto cristal */}
-      {/* Imagen base para el efecto cristal */}
-      <div className="absolute inset-0 w-full lg:w-[55%] bg-cover bg-center z-0" style={{ backgroundImage: "url('/hero-login.png')" }} />
+      {/* Header Global (MUY IMPORTANTE: Solo el logo) */}
+      <header className="h-20 bg-white flex items-center px-10 shrink-0 z-30 relative overflow-hidden">
+        <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
+        {/* Borde inferior estático rojo */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#EB3237]" />
+      </header>
 
-      {/* tipo crsital */}
-      <div
-        className="relative z-10 w-full lg:w-[55%] overflow-hidden flex flex-col justify-between p-10 lg:p-20 order-2 lg:order-1 min-h-[500px] lg:min-h-screen backdrop-blur-xl"
-        style={{ backgroundColor: `rgba(45, 77, 245, ${transparenciaAzul})` }}
-      >
-
-        {/* fondo css */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-overlapping-arcs" />
-
-        {/* Imagen balanza de justicia - Cortada a la mitad en el borde derecho */}
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 z-10 w-[1500px] h-[1500px] pointer-events-none select-none opacity-30"
-          style={{ transform: 'translate(50%, -50%) rotate(-15deg)' }}>
-          <img
-            src="/balanza.jpeg"
-            alt="scales of justice"
-            className="w-full h-full object-contain mix-blend-multiply"
-          />
-        </div>
-
-        {/* Logo e icono */}
-        <div className="relative z-20">
-          <img src="/logo.png" alt="INFORMA PERÚ Logo" className="h-20 w-auto object-contain" />
-        </div>
-
-        {/* Titulo y slogan */}
-        <div className="relative z-20 flex flex-col gap-6 mt-16 max-w-[60%]">
-          <h1 className="text-white font-black leading-[1.1] tracking-tight flex flex-col gap-1">
-            <span className="text-base lg:text-lg font-medium opacity-80 tracking-widest uppercase">Bienvenido a ...</span>
-            <span className="text-[2.2rem] lg:text-[3.8rem] uppercase font-black tracking-tighter whitespace-nowrap logo-gradient-text">INFORMA PERÚ</span>
-          </h1>
-          <p className="text-white/90 text-lg lg:text-xl font-medium leading-relaxed mt-2 max-w-md">
-            Software de prevención de Riesgos, lavado de activos, fraudes y corrupción.
-            Somos la mejor opción
-          </p>
-        </div>
-
-        {/* Footer*/}
-        <div className="relative z-20 mt-auto pt-16">
-        </div>
-      </div>
-
-      {/* formulario login*/}
-      <div className="flex-1 bg-white flex flex-col items-center justify-center p-8 sm:p-12 lg:p-20 order-1 lg:order-2">
-        <div className="w-full max-w-[400px] flex flex-col gap-8">
-
-          {/* Header*/}
-          <div className="flex flex-col gap-2 mb-8">
-            <h2 className="text-[#111318] text-[2rem] font-bold leading-tight tracking-tight uppercase">PANEL DE ADMINISTRACION</h2>
-          </div>
-
-          <form className="flex flex-col gap-6" onSubmit={submit}>
-            {/* inputs*/}
-            <div className="flex flex-col gap-2">
-              <label className="text-[#111318] text-xs font-bold uppercase tracking-wide">USUARIO</label>
-              <div className="flex items-center bg-transparent border-b border-gray-300 focus-within:border-[#111318] transition-colors pb-2">
-                <input className="w-full border-none px-0 py-2 focus:ring-0 text-base font-medium placeholder-[#616f89]/50 bg-transparent" placeholder="admin o usuario1" value={usuario} onChange={(e) => setUsuario(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-[#111318] text-xs font-bold uppercase tracking-wide">CONTRASEÑA</label>
-              <div className="flex items-center bg-transparent border-b border-gray-300 focus-within:border-[#111318] transition-colors pb-2">
-                <input className="w-full border-none px-0 py-2 focus:ring-0 text-base font-medium placeholder-[#616f89]/50 bg-transparent" type="password" placeholder="••••••••" value={clave} onChange={(e) => setClave(e.target.value)} />
-              </div>
-            </div>
-
-            {error && <div className="text-red-500 text-xs font-bold uppercase mt-1">{error}</div>}
-
-            <button className="w-full h-12 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-black transition-colors flex items-center justify-center text-sm shadow-sm border border-[#1a1a1a] mt-4" type="submit">
-              INICIAR SESION
-            </button>
-            <button
-              type="button"
-              className="w-full h-12 bg-white text-[#111318] font-bold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center text-sm shadow-sm border border-gray-300 uppercase tracking-wider"
-              onClick={() => navigate("/registro")}
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        {/* Lado izquierdo: Slider */}
+        <div className="relative w-full lg:w-[58%] overflow-hidden bg-slate-100 shrink-0">
+          {slides.map((slide, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             >
-              REGISTRARME
-            </button>
-          </form>
-
-          {/* iconos opcionalaes*/}
-          <div className="flex flex-col gap-6">
-            <button
-              type="button"
-              className="flex items-center justify-center gap-3 w-full h-12 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm font-semibold text-gray-700 text-sm"
-              onClick={() => window.location.href = `${apiUrl}/auth/google/login?redirect=${encodeURIComponent(window.location.origin + "/")}`}
-            >
-              <img
-                src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
-                alt="Google"
-                className="w-6 h-6"
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-[6000ms] ease-linear"
+                style={{
+                  backgroundImage: `url('${slide.img}')`,
+                  transform: idx === currentSlide ? 'scale(1)' : 'scale(1.1)'
+                }}
               />
-              <span>INICIAR SESION CON GOOGLE</span>
-            </button>
+              <div className="absolute inset-0 bg-[#32508E]/50 backdrop-blur-[1px]" />
+
+              {/* Frase al Centro (MUY IMPORTANTE: Centrada) */}
+              <div className="absolute inset-0 flex items-center justify-center p-12 text-center">
+                <div className="max-w-xl animate-in fade-in zoom-in-95 duration-1000">
+                  <p className="text-white text-base leading-relaxed drop-shadow-md">
+                    {slide.text}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Dots de navegación (Indicadores) */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className={`transition-all duration-300 rounded-full ${i === currentSlide
+                  ? 'w-8 h-2 bg-white'
+                  : 'w-2 h-2 bg-white/40 hover:bg-white/60'
+                  }`}
+              />
+            ))}
           </div>
 
-          {/* Form Footer */}
-          <div className="flex justify-center mt-auto pt-12">
-            <p className="text-[#616f89]/70 text-xs font-semibold">© 2026 INFORMA PERÚ. Todos los derechos reservados.</p>
-          </div>
-
+          {/* Efecto Desvanecimiento hacia el formulario */}
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white via-white/40 to-transparent z-20 hidden lg:block" />
         </div>
-      </div>
+
+        {/* Lado derecho: Formulario */}
+        <div className="flex-1 bg-white flex flex-col items-center justify-center p-8 lg:p-12 overflow-hidden relative">
+          {/* Contenedor animado con borde degradado */}
+          <div className="w-full max-w-[420px] rounded-[2.1rem] p-[3px] animate-border-glow shadow-lg animate-in fade-in slide-in-from-right-8 duration-700">
+            {/* Contenedor interior blanco */}
+            <div className="bg-white rounded-[2rem] p-8 lg:p-10 flex flex-col gap-8 h-full">
+
+              <div className="flex flex-col items-center lg:items-start gap-2">
+                <h2 className="text-[#32508E] text-[2.5rem] lg:text-[2.8rem] font-bold leading-none mb-2 text-center lg:text-left w-full">Login</h2>
+              </div>
+
+              <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-slate-600 text-sm font-semibold ml-1">USUARIO</label>
+                  <div className="flex items-center bg-white border border-[#32508E] focus-within:ring-1 focus-within:ring-[#32508E] rounded-xl transition-all px-4 group shadow-sm">
+                    <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">person</span>
+                    <input
+                      className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
+                      placeholder="Ingrese su usuario"
+                      value={usuario}
+                      onChange={(e) => setUsuario(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-slate-600 text-sm font-semibold ml-1">CONTRASEÑA</label>
+                  <div className="flex items-center bg-white border border-[#32508E] focus-within:ring-1 focus-within:ring-[#32508E] rounded-xl transition-all px-4 group shadow-sm">
+                    <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">lock</span>
+                    <input
+                      className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
+                      type="password"
+                      placeholder="Ingrese su contraseña"
+                      value={clave}
+                      onChange={(e) => setClave(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {error && <div className="text-red-500 text-sm font-medium text-center">{error}</div>}
+
+                <button
+                  className="w-full h-12 bg-[#32508E] text-white text-base font-semibold rounded-xl hover:bg-[#284175] transition-all flex items-center justify-center shadow-md shadow-blue-200 mt-4 active:scale-95 uppercase tracking-wide"
+                  type="submit"
+                >
+                  INGRESAR
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer Global */}
+      <footer className="h-10 bg-[#32508E] flex items-center justify-center px-4 shrink-0 z-30">
+        <p className="text-[12px] text-white/90 text-center">
+          @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+        </p>
+      </footer>
 
       <style>{`
-        @font-face {
-          font-family: 'SaintCarell';
-          src: url('/src/fonts/SaintCarell.otf') format('opentype');
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
-        }
-        .font-saintcarell { font-family: 'SaintCarell', sans-serif; }
-        
-        .logo-gradient-text {
-          color: #32508E;
-          -webkit-background-clip: unset;
-          -webkit-text-fill-color: currentcolor;
-        }
-
-        @keyframes shine {
-          to { background-position: 200% center; }
-        }
-
-        /* Minimal arc lines to simulate the reference left background */
-        .bg-overlapping-arcs {
-          background-image: radial-gradient(circle at -20% 50%, transparent 60%, rgba(255,255,255,0.4) 61%, transparent 62%),
-                            radial-gradient(circle at 120% -20%, transparent 60%, rgba(255,255,255,0.4) 61%, transparent 62%);
-        }
         input:-webkit-autofill { -webkit-box-shadow: 0 0 0 50px white inset; -webkit-text-fill-color: #111318; }
+        
+        @keyframes border-glow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-border-glow {
+          background: linear-gradient(90deg, #32508E, #EEEEEE, #EB3237, #32508E);
+          background-size: 300% 300%;
+          animation: border-glow 8s linear infinite;
+        }
       `}</style>
     </div>
   );
