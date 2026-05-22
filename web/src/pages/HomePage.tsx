@@ -16,15 +16,68 @@ export default function HomePage() {
   }, []);
 
   const modules = [
-    { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
-    { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
-    { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
-    { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-
-    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
-    { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
+    {
+      name: "Listas Negativas",
+      icon: "search",
+      enabled: true,
+      href: "/busqueda",
+      description: "Consulta y gestiona listas de sanciones y entidades riesgosas.",
+      color: "#E84855",
+      bgColor: "#FDECEA",
+      blobColor: "#FBBDC0",
+    },
+    {
+      name: "Matriz de Riesgos",
+      icon: "grid_on",
+      enabled: true,
+      href: "/matriz-riesgos",
+      description: "Identifica, evalúa y gestiona los riesgos de tu organización.",
+      color: "#3A6FD8",
+      bgColor: "#EBF1FB",
+      blobColor: "#B8CFF5",
+    },
+    {
+      name: "Scoring de Riesgo",
+      icon: "trending_up",
+      enabled: true,
+      href: "/scoring",
+      description: "Evalúa y cuantifica el nivel de riesgo de terceros.",
+      color: "#2BAE8E",
+      bgColor: "#E8F8F4",
+      blobColor: "#A8E4D5",
+    },
+    {
+      name: "Registro de Operaciones",
+      icon: "assignment",
+      enabled: true,
+      href: "/registro-operaciones",
+      description: "Registra y da seguimiento a las operaciones realizadas.",
+      color: "#7B5EA7",
+      bgColor: "#F2EEF9",
+      blobColor: "#CFC0E8",
+    },
+    {
+      name: "Reporte de Operaciones",
+      icon: "receipt_long",
+      enabled: true,
+      href: "/reporte-operaciones",
+      description: "Genera reportes detallados de las operaciones y actividades.",
+      color: "#F08030",
+      bgColor: "#FEF3EA",
+      blobColor: "#F9C89A",
+    },
+    {
+      name: "Administrador",
+      icon: "admin_panel_settings",
+      enabled: userRole === 'admin',
+      href: "/load",
+      description: "Administra usuarios, permisos y configuraciones del sistema.",
+      color: "#2AA8A8",
+      bgColor: "#E8F6F6",
+      blobColor: "#A0DEDE",
+    },
   ];
+
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden font-sans text-base text-[#111318]">
       {/* Header Global */}
@@ -34,57 +87,48 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1 overflow-y-auto p-8 lg:p-12 relative bg-[#F4F7FA]">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex flex-col gap-2 mb-10">
-            <h2 className="text-[#32508E] text-[2rem] lg:text-[2.5rem] font-bold leading-none uppercase tracking-tight">MODULOS DEL SISTEMA</h2>
+            <h2 className="text-[#32508E] text-[2rem] lg:text-[2.5rem] font-bold leading-none uppercase tracking-tight">
+              MÓDULOS DE GESTIÓN
+            </h2>
             <div className="h-1 w-20 bg-[#EB3237]" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((m) => (
-              <button
+              <div
                 key={m.name}
-                className={`relative h-44 rounded-2xl overflow-hidden transition-all duration-500 group border text-left p-6 ${m.enabled
-                  ? "bg-white border-slate-300 hover:bg-slate-50 hover:border-[#32508E] hover:-translate-y-2 hover:shadow-xl hover:shadow-slate-200/80"
-                  : "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed"
+                className={`relative bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm p-6 flex flex-col gap-3 transition-all duration-300 ${m.enabled
+                  ? "cursor-pointer hover:-translate-y-1 hover:shadow-lg"
+                  : "opacity-50 cursor-not-allowed"
                   }`}
-                onClick={() => m.enabled ? navigate(m.href!) : null}
+                style={{ minHeight: 210, borderBottom: `4px solid ${m.color}` }}
+                onClick={() => (m.enabled ? navigate(m.href!) : null)}
               >
-                {/* Decorative ghost icon in bottom right */}
-                {m.enabled && (
-                  <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-slate-200 group-hover:text-slate-300 text-[120px] select-none pointer-events-none transition-colors">
-                    {m.icon}
-                  </span>
-                )}
-
-                <div className="h-full flex flex-col justify-between relative z-10">
-                  {/* Top: Label and Icon */}
-                  <div className="flex justify-between items-start">
-                    <div className={`p-3 rounded-2xl ${m.enabled ? "bg-slate-100 text-slate-700 group-hover:bg-slate-200 transition-colors" : "bg-slate-200 text-slate-400"}`}>
-                      <span className="material-symbols-outlined text-3xl">
-                        {m.icon}
-                      </span>
-                    </div>
-                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${m.enabled ? "text-slate-400" : "text-slate-300"}`}>
-                      Módulo Sistema
-                    </span>
+                {/* Top row: Icon and Title */}
+                <div className="flex items-center space-x-3 mb-2">
+                  {/* Ícono circular */}
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: m.bgColor }}>
+                    <span className="material-symbols-outlined text-[1.8rem]" style={{ color: m.color }}>{m.icon}</span>
                   </div>
-
-                  {/* Middle: Big Title */}
-                  <div className="mt-4">
-                    <h3 className={`text-xl font-bold leading-tight uppercase tracking-tight ${m.enabled ? "text-slate-800" : "text-slate-400"}`}>
-                      {m.name}
-                    </h3>
-                  </div>
-
-                  {/* Bottom: Subtitle */}
-                  <div className="mt-2 flex items-center gap-2">
-                    {!m.enabled && (
-                      <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Próximamente</span>
-                    )}
-                  </div>
+                  {/* Título */}
+                  <h3 className="text-[1.05rem] font-bold leading-tight" style={{ color: m.enabled ? m.color : "#94a3b8" }}>{m.name}</h3>
                 </div>
-              </button>
+
+                {/* Bottom row: Description and Acceder button */}
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-slate-500 leading-relaxed flex-1 mr-2">
+                    {m.enabled ? m.description : "Próximamente disponible."}
+                  </p>
+                  {m.enabled && (
+                    <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: m.color }}>
+                      {/* Acceder aquí*/}
+                      <span className="material-symbols-outlined text-[2rem] opacity-50">arrow_forward</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </div>
