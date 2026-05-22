@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface Beneficiary {
   numero_beneficiario: string;
@@ -14,7 +14,7 @@ interface OperationData {
   numero_registro: string;
   oficina: string;
   fecha_registro: string;
-  
+
   // Section II
   id_tipo_doc_fisica: string;
   num_doc_fisica: string;
@@ -102,12 +102,19 @@ const initialForm: OperationData = {
   beneficiarios: []
 };
 
+import { Link } from "react-router-dom";
+
 export default function OperationsRegistryPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [view, setView] = useState<"list" | "form">("list");
   const [registros, setRegistros] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [formData, setFormData] = useState<OperationData>(initialForm);
+  const [userRole, setUserRole] = useState<string>('user');
+
   const [lookups, setLookups] = useState({
     tipo_doc: [] as any[],
     paises: [] as any[]
@@ -119,7 +126,24 @@ export default function OperationsRegistryPage() {
   useEffect(() => {
     fetchRegistros();
     fetchLookups();
+
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setUserRole(decoded.role || 'user');
+      } catch { }
+    }
   }, []);
+
+  const modules = [
+    { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
+    { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
+    { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
+    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
+    { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
+  ];
 
   const fetchRegistros = async () => {
     try {
@@ -143,6 +167,45 @@ export default function OperationsRegistryPage() {
       console.error(err);
     }
   };
+
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div className="border-t border-slate-300 pt-4 mt-6 mb-4">
+      <h3 className="text-sm font-bold text-[#1e293b] uppercase">{title}</h3>
+    </div>
+  );
+
+  const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+    <label className="block text-xs font-medium text-slate-600 mb-1">
+      {children} {required && <span className="text-red-500">*</span>}
+    </label>
+  );
+
+  const Input = ({ name, type = "text", placeholder, required, value, onChange }: any) => (
+    <input
+      type={type}
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange || handleInputChange}
+      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 transition-colors"
+    />
+  );
+
+  const Select = ({ name, required, value, options, placeholder, onChange }: any) => (
+    <select
+      name={name}
+      required={required}
+      value={value}
+      onChange={onChange || handleInputChange}
+      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 transition-colors appearance-none"
+    >
+      <option value="">-- {placeholder || 'Seleccione'} --</option>
+      {options.map((o: any) => (
+        <option key={o.id} value={o.id}>{o.nombre}</option>
+      ))}
+    </select>
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -192,65 +255,119 @@ export default function OperationsRegistryPage() {
     }
   };
 
-  const SectionHeader = ({ title }: { title: string }) => (
-    <div className="border-t border-slate-300 pt-4 mt-6 mb-4">
-      <h3 className="text-sm font-bold text-[#1e293b] uppercase">{title}</h3>
+  const Layout = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex h-screen overflow-hidden relative bg-[#F4F7FA] font-sans text-base">
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#111827] flex flex-col shrink-0 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isCollapsed ? 'w-20' : 'w-72'}`}>
+        <div className={`h-20 flex items-center px-6 bg-white border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+          {!isCollapsed && (
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-8 w-auto object-contain" />
+            </Link>
+          )}
+          {isCollapsed && (
+            <Link to="/" className="flex items-center justify-center">
+              <img src="/logo.png" alt="IP" className="h-10 w-10 object-contain" />
+            </Link>
+          )}
+          <button className="lg:hidden text-slate-400" onClick={() => setIsSidebarOpen(false)}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
+        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex w-full items-center justify-center py-2 rounded-xl text-slate-500 hover:bg-white/5 hover:text-white transition-all mb-4"
+          >
+            <span className="material-symbols-outlined transition-transform duration-300" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }}>
+              {isCollapsed ? 'menu_open' : 'menu_open'}
+            </span>
+          </button>
+
+          <div className="space-y-4">
+            {!isCollapsed && <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Sistemas</p>}
+            <div className="space-y-2">
+              {/* Inicio Button - Reubicado */}
+              <button
+                onClick={() => navigate('/')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+                style={{backgroundColor: 'transparent'}}
+              >
+                <span className="material-symbols-outlined text-xl">home</span>
+                {!isCollapsed && <span>Inicio</span>}
+              </button>
+
+              {modules.map((m) => (
+                <button
+                  key={m.name}
+                  disabled={!m.enabled}
+                  onClick={() => navigate(m.href)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
+                  style={{backgroundColor: 'transparent'}}
+                >
+                  <span className="material-symbols-outlined text-xl">{m.icon}</span>
+                  {!isCollapsed && <span>{m.name}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 mt-auto border-t border-white/5">
+            <button
+              className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors font-bold uppercase text-[10px] tracking-widest ${isCollapsed ? 'justify-center' : ''}`}
+              onClick={() => { localStorage.removeItem("auth_token"); window.location.href = '/login'; }}
+            >
+              <span className="material-symbols-outlined text-xl">logout</span>
+              {!isCollapsed && <span>CERRAR SESIÓN</span>}
+            </button>
+          </div>
+        </nav>
+      </aside>
+
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+          <div className="flex items-center gap-4">
+            <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
+              <span className="material-symbols-outlined">menu</span>
+            </button>
+            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest hidden sm:block">Registro de Operaciones</h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setView(view === "list" ? "form" : "list")}
+              className="bg-[#6200ee] text-white px-6 py-2 rounded-lg text-[10px] font-bold shadow-lg hover:bg-[#5000ca] transition-all uppercase tracking-widest"
+            >
+              {view === "list" ? "NUEVO REGISTRO" : "VOLVER AL LISTADO"}
+            </button>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8">
+          {children}
+        </div>
+
+        <footer className="py-4 bg-white border-t border-slate-100 flex items-center justify-center shrink-0">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center px-4">
+            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+          </p>
+        </footer>
+      </main>
     </div>
-  );
-
-  const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-    <label className="block text-xs font-medium text-slate-600 mb-1">
-      {children} {required && <span className="text-red-500">*</span>}
-    </label>
-  );
-
-  const Input = ({ name, type = "text", placeholder, required, value, onChange }: any) => (
-    <input
-      type={type}
-      name={name}
-      required={required}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange || handleInputChange}
-      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 transition-colors"
-    />
-  );
-
-  const Select = ({ name, required, value, options, placeholder, onChange }: any) => (
-    <select
-      name={name}
-      required={required}
-      value={value}
-      onChange={onChange || handleInputChange}
-      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 transition-colors appearance-none"
-    >
-      <option value="">-- {placeholder || 'Seleccione'} --</option>
-      {options.map((o: any) => (
-        <option key={o.id} value={o.id}>{o.nombre}</option>
-      ))}
-    </select>
   );
 
   if (view === "form") {
     return (
-      <div className="min-h-screen bg-[#f1f5f9] font-display">
-        <header className="px-8 py-4 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
-            <span className="text-indigo-600 cursor-pointer" onClick={() => navigate("/home")}>Inicio</span>
-            <span className="mx-2">›</span>
-            <span>Registro de Operaciones</span>
-          </div>
-          <button 
-            onClick={() => setView("list")}
-            className="bg-[#6200ee] text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-[#5000ca] transition-all"
-          >
-            VOLVER
-          </button>
-        </header>
-
-        <form onSubmit={handleSubmit} className="max-w-7xl mx-auto px-8 pb-12">
+      <Layout>
+        <form onSubmit={handleSubmit} className="max-w-7xl mx-auto pb-12">
           <SectionHeader title="SECCIÓN I - INFORMACIÓN DEL REGISTRO" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div>
               <Label required>Empresa</Label>
               <Input name="empresa" value={formData.empresa} required />
@@ -270,7 +387,7 @@ export default function OperationsRegistryPage() {
           </div>
 
           <SectionHeader title="SECCIÓN II - IDENTIDAD DE LA PERSONA QUE FÍSICAMENTE REALIZA LA OPERACIÓN" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div>
               <Label>Documento de Identidad</Label>
               <Select name="id_tipo_doc_fisica" value={formData.id_tipo_doc_fisica} options={lookups.tipo_doc} />
@@ -313,20 +430,20 @@ export default function OperationsRegistryPage() {
             </div>
             <div>
               <Label>Departamento</Label>
-              <Select name="departamento_fisica" value={formData.departamento_fisica} options={[{id:'Lima', nombre:'Lima'}]} />
+              <Select name="departamento_fisica" value={formData.departamento_fisica} options={[{ id: 'Lima', nombre: 'Lima' }]} />
             </div>
             <div>
               <Label>Provincia</Label>
-              <Select name="provincia_fisica" value={formData.provincia_fisica} options={[{id:'Lima', nombre:'Lima'}]} />
+              <Select name="provincia_fisica" value={formData.provincia_fisica} options={[{ id: 'Lima', nombre: 'Lima' }]} />
             </div>
             <div>
               <Label>Distrito</Label>
-              <Select name="distrito_fisica" value={formData.distrito_fisica} options={[{id:'Miraflores', nombre:'Miraflores'}]} />
+              <Select name="distrito_fisica" value={formData.distrito_fisica} options={[{ id: 'Miraflores', nombre: 'Miraflores' }]} />
             </div>
           </div>
 
           <SectionHeader title="SECCIÓN III - PERSONA EN CUYO NOMBRE SE REALIZA LA OPERACIÓN" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div>
               <Label>Documento de Identidad</Label>
               <Select name="id_tipo_doc_nombre" value={formData.id_tipo_doc_nombre} options={lookups.tipo_doc} />
@@ -369,20 +486,20 @@ export default function OperationsRegistryPage() {
             </div>
             <div>
               <Label>Departamento</Label>
-              <Select name="departamento_nombre" value={formData.departamento_nombre} options={[{id:'Lima', nombre:'Lima'}]} />
+              <Select name="departamento_nombre" value={formData.departamento_nombre} options={[{ id: 'Lima', nombre: 'Lima' }]} />
             </div>
             <div>
               <Label>Provincia</Label>
-              <Select name="provincia_nombre" value={formData.provincia_nombre} options={[{id:'Lima', nombre:'Lima'}]} />
+              <Select name="provincia_nombre" value={formData.provincia_nombre} options={[{ id: 'Lima', nombre: 'Lima' }]} />
             </div>
             <div>
               <Label>Distrito</Label>
-              <Select name="distrito_nombre" value={formData.distrito_nombre} options={[{id:'Miraflores', nombre:'Miraflores'}]} />
+              <Select name="distrito_nombre" value={formData.distrito_nombre} options={[{ id: 'Miraflores', nombre: 'Miraflores' }]} />
             </div>
           </div>
 
           <SectionHeader title="SECCIÓN IV - DESCRIPCIÓN DE LA OPERACIÓN" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div>
               <Label>Fecha de la operación</Label>
               <Input type="date" name="fec_operacion" value={formData.fec_operacion} />
@@ -393,11 +510,11 @@ export default function OperationsRegistryPage() {
             </div>
             <div>
               <Label>Modalidad de pago</Label>
-              <Select name="modalidad_pago" value={formData.modalidad_pago} options={[{id:'Efectivo', nombre:'Efectivo'}, {id:'Transferencia', nombre:'Transferencia'}]} />
+              <Select name="modalidad_pago" value={formData.modalidad_pago} options={[{ id: 'Efectivo', nombre: 'Efectivo' }, { id: 'Transferencia', nombre: 'Transferencia' }]} />
             </div>
             <div>
               <Label>Tipo de Moneda</Label>
-              <Select name="tipo_moneda" value={formData.tipo_moneda} options={[{id:'PEN', nombre:'Soles'}, {id:'USD', nombre:'Dolares'}]} />
+              <Select name="tipo_moneda" value={formData.tipo_moneda} options={[{ id: 'PEN', nombre: 'Soles' }, { id: 'USD', nombre: 'Dolares' }]} />
             </div>
             <div>
               <Label>Monto de la operación</Label>
@@ -405,7 +522,7 @@ export default function OperationsRegistryPage() {
             </div>
             <div>
               <Label>Tipo de operación</Label>
-              <Select name="tipo_operacion" value={formData.tipo_operacion} options={[{id:'Compra', nombre:'Compra'}, {id:'Venta', nombre:'Venta'}]} />
+              <Select name="tipo_operacion" value={formData.tipo_operacion} options={[{ id: 'Compra', nombre: 'Compra' }, { id: 'Venta', nombre: 'Venta' }]} />
             </div>
             <div>
               <Label>N° de cuenta 1</Label>
@@ -423,17 +540,17 @@ export default function OperationsRegistryPage() {
 
           <div className="flex items-center justify-between mt-8 border-t border-slate-300 pt-4">
             <h3 className="text-sm font-bold text-[#1e293b] uppercase">SECCIÓN V - BENEFICIARIOS MÚLTIPLES</h3>
-            <button 
+            <button
               type="button"
               onClick={addBeneficiary}
-              className="bg-[#6200ee] text-white px-4 py-2 rounded-lg text-xs font-bold shadow hover:bg-[#5000ca] uppercase transition-all"
+              className="bg-[#6200ee] text-white px-4 py-2 rounded-lg text-[10px] font-bold shadow hover:bg-[#5000ca] uppercase transition-all tracking-widest"
             >
               AÑADIR BENEFICIARIO
             </button>
           </div>
 
-          <div className="mt-4 overflow-hidden border border-slate-200 rounded-lg bg-white shadow-sm">
-            <table className="w-full text-left text-xs">
+          <div className="mt-4 overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm overflow-x-auto">
+            <table className="w-full text-left text-[10px]">
               <thead className="bg-[#f8fafc] text-slate-700 font-bold border-b border-slate-200">
                 <tr>
                   <th className="px-4 py-3 border-r border-slate-200">N° BENEFICIARIO</th>
@@ -475,93 +592,75 @@ export default function OperationsRegistryPage() {
           </div>
 
           <div className="flex justify-end mt-8">
-            <button 
+            <button
               disabled={loading}
-              className={`bg-[#6200ee] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xl hover:bg-[#5000ca] transition-all uppercase tracking-wider ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`bg-[#6200ee] text-white px-8 py-3 rounded-xl text-xs font-bold shadow-xl hover:bg-[#5000ca] transition-all uppercase tracking-wider ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loading ? "GUARDANDO..." : "REGISTRAR"}
+              {loading ? "GUARDANDO..." : "REGISTRAR OPERACIÓN"}
             </button>
           </div>
         </form>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] font-display">
-      <header className="px-8 py-4 flex items-center justify-between">
-        <div className="text-xs text-slate-500">
-          <span className="text-indigo-600 cursor-pointer" onClick={() => navigate("/home")}>Inicio</span>
-          <span className="mx-2">›</span>
-          <span>Registro de Operaciones</span>
+    <Layout>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex items-center gap-4 bg-slate-50/50">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mostrar</span>
+          <select className="border border-slate-200 rounded-lg text-[10px] font-bold px-3 py-1 outline-none bg-white">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+          </select>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">registros</span>
         </div>
-        <button 
-          onClick={() => setView("form")}
-          className="bg-[#6200ee] text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-[#5000ca] transition-all uppercase"
-        >
-          NUEVO REGISTRO
-        </button>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-8 py-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex items-center gap-4">
-            <span className="text-xs text-slate-500">Show</span>
-            <select className="border border-slate-300 rounded text-xs px-2 py-1 outline-none">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-            </select>
-            <span className="text-xs text-slate-500">entries</span>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[11px] font-medium text-[#1e293b]">
-              <thead className="bg-[#e2e8f0] border-b border-slate-300">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[10px] font-medium text-[#1e293b]">
+            <thead className="bg-[#f8fafc] border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-4 border-r border-slate-200 w-12 text-center uppercase tracking-widest">ID</th>
+                <th className="px-4 py-4 border-r border-slate-200 uppercase tracking-widest">N° registro</th>
+                <th className="px-4 py-4 border-r border-slate-200 uppercase tracking-widest">Persona (Física)</th>
+                <th className="px-4 py-4 border-r border-slate-200 uppercase tracking-widest">Persona (Nombre)</th>
+                <th className="px-4 py-4 border-r border-slate-200 uppercase tracking-widest text-center">Oficina</th>
+                <th className="px-4 py-4 border-r border-slate-200 uppercase tracking-widest text-center">Fecha</th>
+                <th className="px-4 py-4 uppercase tracking-widest text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {registros.length === 0 ? (
                 <tr>
-                  <th className="px-4 py-3 border-r border-slate-300 w-12 text-center uppercase">ID</th>
-                  <th className="px-4 py-3 border-r border-slate-300 uppercase">N° de registro</th>
-                  <th className="px-4 py-3 border-r border-slate-300 uppercase">Persona que físicamente realiza la operación</th>
-                  <th className="px-4 py-3 border-r border-slate-300 uppercase">Persona en cuyo nombre se realiza la operación</th>
-                  <th className="px-4 py-3 border-r border-slate-300 uppercase">Oficina</th>
-                  <th className="px-4 py-3 border-r border-slate-300 uppercase">Fecha de registro</th>
-                  <th className="px-4 py-3 uppercase">Acciones</th>
+                  <td colSpan={7} className="px-4 py-20 text-center text-slate-400 font-bold uppercase tracking-widest bg-slate-50/50">
+                    No hay datos disponibles en el sistema
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {registros.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-16 text-center text-slate-400 font-semibold text-lg italic bg-slate-50">
-                      No hay datos disponibles
+              ) : (
+                registros.map((r, idx) => (
+                  <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-4 border-r border-slate-100 text-center text-slate-500">#{r.id}</td>
+                    <td className="px-4 py-4 border-r border-slate-100 font-black text-[#32508E]">{r.numero_registro}</td>
+                    <td className="px-4 py-4 border-r border-slate-100 uppercase">{r.nombres_fisica} {r.apellidos_fisica}</td>
+                    <td className="px-4 py-4 border-r border-slate-100 uppercase">{r.nombres_nombre} {r.apellidos_nombre}</td>
+                    <td className="px-4 py-4 border-r border-slate-100 uppercase text-center">{r.oficina}</td>
+                    <td className="px-4 py-4 border-r border-slate-100 text-center">{r.fecha_registro.split('T')[0]}</td>
+                    <td className="px-4 py-4 text-center">
+                      <button className="text-[#32508E] hover:bg-[#32508E]/10 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all">Ver detalle</button>
                     </td>
                   </tr>
-                ) : (
-                  registros.map((r, idx) => (
-                    <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 border-r border-slate-200 text-center">{r.id}</td>
-                      <td className="px-4 py-3 border-r border-slate-200 font-bold">{r.numero_registro}</td>
-                      <td className="px-4 py-3 border-r border-slate-200 uppercase">{r.nombres_fisica} {r.apellidos_fisica}</td>
-                      <td className="px-4 py-3 border-r border-slate-200 uppercase">{r.nombres_nombre} {r.apellidos_nombre}</td>
-                      <td className="px-4 py-3 border-r border-slate-300 uppercase">{r.oficina}</td>
-                      <td className="px-4 py-3 border-r border-slate-300">{r.fecha_registro.split('T')[0]}</td>
-                      <td className="px-4 py-3">
-                        <button className="text-indigo-600 hover:underline">Ver detalle</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="p-4 border-t border-slate-200 flex justify-end gap-2">
-            <button className="bg-[#eef2ff] text-slate-400 px-4 py-1 rounded text-xs font-semibold cursor-not-allowed">Anterior</button>
-            <button className="bg-[#eef2ff] text-slate-400 px-4 py-1 rounded text-xs font-semibold cursor-not-allowed">Siguiente</button>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </main>
 
-
-    </div>
+        <div className="p-4 border-t border-slate-200 flex justify-end gap-2 bg-slate-50/50">
+          <button className="bg-white border border-slate-200 text-slate-400 px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest cursor-not-allowed">Anterior</button>
+          <button className="bg-white border border-slate-200 text-slate-400 px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest cursor-not-allowed">Siguiente</button>
+        </div>
+      </div>
+    </Layout>
   );
 }

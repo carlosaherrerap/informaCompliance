@@ -112,53 +112,55 @@ export default function LoginPage() {
         {/* Lado derecho: Formulario */}
         <div className="flex-1 bg-white flex flex-col items-center justify-center p-8 lg:p-12 overflow-hidden relative">
           {/* Contenedor animado con borde degradado */}
-          <div className="w-full max-w-[420px] rounded-[2.1rem] p-[3px] animate-border-glow shadow-lg animate-in fade-in slide-in-from-right-8 duration-700">
+          <div className="w-full max-w-[420px] rounded-none p-[3px] animate-border-glow shadow-lg animate-in fade-in slide-in-from-right-8 duration-700">
             {/* Contenedor interior blanco */}
-            <div className="bg-white rounded-[2rem] p-8 lg:p-10 flex flex-col gap-8 h-full">
+            <div className="bg-white rounded-none p-8 lg:p-10 flex flex-col gap-8 h-full relative overflow-hidden login-card">
+              {/* Contenido con z-index para estar sobre el pseudo-elemento */}
+              <div className="relative z-10 flex flex-col gap-8">
+                <div className="flex flex-col items-center lg:items-start gap-2">
+                  <h2 className="text-[#32508E] text-[2.5rem] lg:text-[2.8rem] font-bold leading-none mb-2 text-center lg:text-left w-full">Login</h2>
+                </div>
 
-              <div className="flex flex-col items-center lg:items-start gap-2">
-                <h2 className="text-[#32508E] text-[2.5rem] lg:text-[2.8rem] font-bold leading-none mb-2 text-center lg:text-left w-full">Login</h2>
+                <form className="flex flex-col gap-5" onSubmit={submit}>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-600 text-sm font-semibold ml-1">USUARIO</label>
+                    <div className="flex items-center bg-white border-2 border-[#32508E] rounded-none transition-all px-4 group">
+                      <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">person</span>
+                      <input
+                        className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
+                        placeholder="Ingrese su usuario"
+                        value={usuario}
+                        onChange={(e) => setUsuario(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-600 text-sm font-semibold ml-1">CONTRASEÑA</label>
+                    <div className="flex items-center bg-white border-2 border-[#32508E] rounded-none transition-all px-4 group">
+                      <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">lock</span>
+                      <input
+                        className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
+                        type="password"
+                        placeholder="Ingrese su contraseña"
+                        value={clave}
+                        onChange={(e) => setClave(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {error && <div className="text-red-500 text-sm font-medium text-center">{error}</div>}
+
+                  <button
+                    className="w-full h-12 bg-[#32508E] text-white text-base font-semibold rounded-none hover:bg-[#284175] transition-all flex items-center justify-center mt-4 active:scale-95 uppercase tracking-wide"
+                    type="submit"
+                  >
+                    INGRESAR
+                  </button>
+                </form>
               </div>
-
-              <form className="flex flex-col gap-5" onSubmit={submit}>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-600 text-sm font-semibold ml-1">USUARIO</label>
-                  <div className="flex items-center bg-white border border-[#32508E] focus-within:ring-1 focus-within:ring-[#32508E] rounded-xl transition-all px-4 group shadow-sm">
-                    <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">person</span>
-                    <input
-                      className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
-                      placeholder="Ingrese su usuario"
-                      value={usuario}
-                      onChange={(e) => setUsuario(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-600 text-sm font-semibold ml-1">CONTRASEÑA</label>
-                  <div className="flex items-center bg-white border border-[#32508E] focus-within:ring-1 focus-within:ring-[#32508E] rounded-xl transition-all px-4 group shadow-sm">
-                    <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">lock</span>
-                    <input
-                      className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
-                      type="password"
-                      placeholder="Ingrese su contraseña"
-                      value={clave}
-                      onChange={(e) => setClave(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {error && <div className="text-red-500 text-sm font-medium text-center">{error}</div>}
-
-                <button
-                  className="w-full h-12 bg-[#32508E] text-white text-base font-semibold rounded-xl hover:bg-[#284175] transition-all flex items-center justify-center shadow-md shadow-blue-200 mt-4 active:scale-95 uppercase tracking-wide"
-                  type="submit"
-                >
-                  INGRESAR
-                </button>
-              </form>
             </div>
           </div>
         </div>
@@ -183,6 +185,34 @@ export default function LoginPage() {
           background: linear-gradient(90deg, #32508E, #EEEEEE, #EB3237, #32508E);
           background-size: 300% 300%;
           animation: border-glow 8s linear infinite;
+        }
+
+        .login-card::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, white 0%, #EB3237 100%);
+          clip-path: polygon(0 0, 35% 0, 0 65%);
+          opacity: 0.15;
+          pointer-events: none;
+          z-index: 1;
+        }
+        
+        .login-card::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(315deg, white 0%, #EB3237 100%);
+          clip-path: polygon(100% 100%, 65% 100%, 100% 35%);
+          opacity: 0.15;
+          pointer-events: none;
+          z-index: 1;
         }
       `}</style>
     </div>

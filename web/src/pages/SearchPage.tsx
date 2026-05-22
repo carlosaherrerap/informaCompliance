@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from 'xlsx';
@@ -26,11 +26,25 @@ export default function SearchPage() {
   const [detailData, setDetailData] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [userRole, setUserRole] = useState('user');
+
+  const modules = [
+    { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
+    { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
+    { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
+    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
+    { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
+  ];
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function fetchTokens() {
     const token = localStorage.getItem("auth_token") || "";
@@ -183,6 +197,7 @@ export default function SearchPage() {
     if (token) {
       try {
         const payload: any = JSON.parse(atob(token.split(".")[1]));
+        setUserRole(payload.role || 'user');
         const socket = io(apiUrl.replace("/api", "")); // Adjust if needed
         socket.emit("join", payload.uid);
         socket.on("notification", () => {
@@ -253,86 +268,148 @@ export default function SearchPage() {
           <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
         )}
 
-        <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
-            </div>
+        <aside className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#111827] flex flex-col shrink-0 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isCollapsed ? 'w-20' : 'w-72'}`}>
+          <div className={`h-20 flex items-center px-6 bg-white border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+            {!isCollapsed && (
+              <Link to="/" className="flex items-center gap-3">
+                <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-8 w-auto object-contain" />
+              </Link>
+            )}
+            {isCollapsed && (
+              <Link to="/" className="flex items-center justify-center">
+                <img src="/logo.png" alt="IP" className="h-10 w-10 object-contain" />
+              </Link>
+            )}
             <button className="lg:hidden text-slate-400" onClick={() => setIsSidebarOpen(false)}>
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
 
-          <nav className="flex-1 px-4 space-y-4 mt-4 overflow-y-auto">
-            <div className="space-y-1">
-              <p className="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Navegación</p>
-              <Link className="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary/10 text-primary transition-colors font-bold uppercase text-[10px] tracking-wide" to="/busqueda">
-                <span className="material-symbols-outlined text-xl">search</span>
-                <span>Listas Negativas</span>
-              </Link>
-              <Link className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-bold uppercase text-[10px] tracking-wide" to="/perfil">
-                <span className="material-symbols-outlined text-xl">account_circle</span>
-                <span>Perfil</span>
-              </Link>
-            </div>
+          <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
+          <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+            {/* Toggle Button */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex w-full items-center justify-center py-2 rounded-xl text-slate-500 hover:bg-white/5 hover:text-white transition-all mb-4"
+            >
+              <span className="material-symbols-outlined transition-transform duration-300" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }}>
+                {isCollapsed ? 'menu_open' : 'menu_open'}
+              </span>
+            </button>
 
-            <div className="space-y-1">
-              <p className="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Herramientas</p>
-              <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-blue-600 bg-blue-50/50 hover:bg-blue-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { }}>
-                <span className="material-symbols-outlined text-xl">verified</span>
-                <span>DDA (Ampliada)</span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-green-600 bg-green-50/50 hover:bg-green-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => (document.getElementById('massive-upload') as HTMLInputElement)?.click()}>
-                <span className="material-symbols-outlined text-xl">upload_file</span>
-                <span>Cargar Masiva</span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => setIsScheduleModalOpen(true)}>
-                <span className="material-symbols-outlined text-xl">calendar_add_on</span>
-                <span>Programar</span>
-              </button>
-            </div>
+            <div className="space-y-4">
+              {!isCollapsed && <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Sistemas</p>}
+              <div className="space-y-2">
+                {/* Inicio Button - Reubicado */}
+                <button
+                  onClick={() => navigate('/')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+                  style={{backgroundColor: 'transparent'}}
+                >
+                  <span className="material-symbols-outlined text-xl">home</span>
+                  {!isCollapsed && <span>Inicio</span>}
+                </button>
 
-            <div className="space-y-1">
-              <p className="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Créditos y Alertas</p>
-              <div className="flex items-center justify-between px-3 py-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg">database</span>
-                  <span className="text-[10px] font-black text-primary uppercase">{tokens ?? "-"}</span>
-                </div>
-                <span className="text-[8px] font-medium text-slate-400 uppercase">Busquedas</span>
+                {modules.map((m) => (
+                  <button
+                    key={m.name}
+                    disabled={!m.enabled}
+                    onClick={() => navigate(m.href)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
+                    style={{backgroundColor: 'transparent'}}
+                  >
+                    <span className="material-symbols-outlined text-xl">{m.icon}</span>
+                    {!isCollapsed && <span>{m.name}</span>}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <button className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide relative" onClick={() => setShowNotifDropdown(!showNotifDropdown)}>
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-xl">notifications</span>
-                  <span>Alertas</span>
-                </div>
-                {notifications.length > 0 && <span className="size-4 bg-red-500 text-white text-[8px] flex items-center justify-center rounded-full">{notifications.length}</span>}
+            <div className="pt-4 mt-auto border-t border-white/5">
+              <button
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors font-bold uppercase text-[10px] tracking-widest ${isCollapsed ? 'justify-center' : ''}`}
+                onClick={() => { localStorage.removeItem("auth_token"); window.location.href = '/login'; }}
+              >
+                <span className="material-symbols-outlined text-xl">logout</span>
+                {!isCollapsed && <span>CERRAR SESIÓN</span>}
               </button>
-
-              {showNotifDropdown && notifications.length > 0 && (
-                <div className="mt-2 space-y-2 px-2">
-                  {notifications.slice(0, 3).map(n => (
-                    <div key={n.id} className="p-3 bg-red-50 rounded-lg text-[9px] font-medium text-red-600 relative cursor-pointer" onClick={() => markNotificationRead(n.id)}>
-                      Coincidencia encontrada en base programada.
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </nav>
-
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-            <button className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-bold uppercase text-[10px] tracking-widest" onClick={() => { localStorage.removeItem("auth_token"); navigate("/login"); }}>
-              <span className="material-symbols-outlined text-xl">logout</span>
-              <span>CERRAR SESIÓN</span>
-            </button>
-          </div>
         </aside>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-20 bg-white border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 z-20">
-            <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 lg:h-12 w-auto object-contain flex-shrink-0" />
+          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+            <div className="flex items-center gap-4">
+              <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
+                <span className="material-symbols-outlined">menu</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 relative">
+              {/* Tokens usage info in header */}
+              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                <span className="material-symbols-outlined text-primary text-xl">database</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-primary uppercase leading-tight">{tokens ?? "-"}</span>
+                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Busquedas</span>
+                </div>
+              </div>
+
+              {/* Perfil Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 ${showProfileDropdown ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold'}`}
+                >
+                  <span className="material-symbols-outlined text-2xl">account_circle</span>
+                  <span className="text-[10px] uppercase tracking-widest hidden sm:block">Mi Cuenta</span>
+                  <span className={`material-symbols-outlined text-lg transition-transform duration-300 ${showProfileDropdown ? 'rotate-180' : ''}`}>expand_more</span>
+                </button>
+
+                {showProfileDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileDropdown(false)} />
+                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                      <div className="p-4 bg-slate-50/50 border-b border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Acciones y Herramientas</p>
+                      </div>
+                      <div className="p-2 space-y-1">
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-600 hover:bg-blue-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); }}>
+                          <span className="material-symbols-outlined text-xl text-blue-500">verified</span>
+                          <span>DDA (Ampliada)</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-green-600 hover:bg-green-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); (document.getElementById('massive-upload') as HTMLInputElement)?.click(); }}>
+                          <span className="material-symbols-outlined text-xl text-green-500">upload_file</span>
+                          <span>Cargar Masiva</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); setIsScheduleModalOpen(true); }}>
+                          <span className="material-symbols-outlined text-xl">calendar_add_on</span>
+                          <span>Programar Búsqueda</span>
+                        </button>
+
+                        <div className="h-px bg-slate-100 my-2 mx-4" />
+
+                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide" onClick={() => { setShowNotifDropdown(!showNotifDropdown); }}>
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-xl">notifications</span>
+                            <span>Alertas Sistema</span>
+                          </div>
+                          {notifications.length > 0 && <span className="size-5 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full shadow-lg shadow-red-200">{notifications.length}</span>}
+                        </button>
+
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-red-500 hover:bg-red-50 transition-colors font-bold uppercase text-[10px] tracking-[0.2em] mt-2 bg-red-50/30"
+                          onClick={() => { localStorage.removeItem("auth_token"); navigate("/login"); }}
+                        >
+                          <span className="material-symbols-outlined text-xl">logout</span>
+                          <span>Cerrar Sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8">
@@ -362,7 +439,10 @@ export default function SearchPage() {
                 </div>
 
                 <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
-                  <button className="px-6 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>Limpiar</button>
+                  <button className="px-6 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-2" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>
+                    <span className="material-symbols-outlined text-sm">refresh</span>
+                    Limpiar
+                  </button>
                   <button className="px-10 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20" onClick={() => consultar(1)}>
                     <span className="material-symbols-outlined text-sm">search</span>
                     Buscar
