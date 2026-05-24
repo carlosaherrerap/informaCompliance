@@ -363,7 +363,6 @@ export default function HomePage() {
                   ? "cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-slate-200/80 group"
                   : "opacity-60 cursor-not-allowed bg-slate-50/50"
                   }`}
-                style={{ borderBottom: `4px solid ${m.color}` }}
                 onClick={() => (m.enabled ? navigate(m.href!) : null)}
               >
                 {!m.enabled && (
