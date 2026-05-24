@@ -52,5 +52,5 @@ services:
 
 databases:
   - name: informaperu-db
-    plan: free
+    plan: basic
     region: ohio
