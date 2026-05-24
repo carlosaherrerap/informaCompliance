@@ -5,6 +5,11 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>('user');
 
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    navigate("/login");
+  };
+
   // Chat and AI Assistant States
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<any[]>([
@@ -335,8 +340,18 @@ export default function HomePage() {
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden font-sans text-base text-[#111318]">
       {/* Header Global */}
-      <header className="h-20 bg-white flex items-center px-10 shrink-0 z-30 relative shadow-sm">
+      <header className="h-20 bg-white flex items-center justify-between px-10 shrink-0 z-30 relative shadow-sm">
         <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
+        
+        {/* Cerrar Sesión Button (Apple-design inspired subtle utility button) */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[#1d1d1f] hover:text-[#0066cc] rounded-full text-xs font-semibold tracking-wide transition-all select-none active:scale-[0.95]"
+        >
+          <span className="material-symbols-outlined text-[16px]">logout</span>
+          <span>Cerrar Sesión</span>
+        </button>
+
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#EB3237]" />
       </header>
 
