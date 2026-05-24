@@ -31,7 +31,7 @@ function isTokenValid(): boolean {
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isTokenValid()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 }
@@ -41,7 +41,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={logged ? <Navigate to="/home" replace /> : <LoginPage />} />
+      <Route path="/" element={logged ? <Navigate to="/home" replace /> : <LoginPage />} />
+      <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="/registro" element={logged ? <Navigate to="/home" replace /> : <RegisterPage />} />
       <Route path="/home" element={<RequireAuth><HomePage /></RequireAuth>} />
       <Route path="/perfil" element={<RequireAuth><ProfilePage /></RequireAuth>} />
@@ -55,8 +56,7 @@ export default function App() {
       <Route path="/reporte-operaciones" element={<RequireAuth><ReporteOperacionesPage /></RequireAuth>} />
       <Route path="/completar-perfil" element={<RequireAuth><CompletarPerfilPage /></RequireAuth>} />
       <Route path="/load" element={<RequireAuth><LoadPage /></RequireAuth>} />
-      <Route path="/" element={<Navigate to={logged ? "/home" : "/login"} replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
