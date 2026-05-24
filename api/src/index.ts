@@ -1161,55 +1161,96 @@ app.get("/operaciones/stats", requireAuth, async (req: any, res) => {
 
 // ─── AI Proxy Routes (keeps API keys server-side) ────────────────────────────
 
+// GET /api/health  →  check env vars are loaded (never exposes actual key values)
+app.get("/api/health", (req, res) => {
+  const dgKey = process.env.DEEPGRAM_API_KEY || "";
+  const dsKey = process.env.DEEPSEEK_API_KEY || "";
+  console.log("[HEALTH] DEEPGRAM_API_KEY loaded:", !!dgKey, "| length:", dgKey.length, "| starts:", dgKey.slice(0, 4) || "EMPTY");
+  console.log("[HEALTH] DEEPSEEK_API_KEY loaded:", !!dsKey, "| length:", dsKey.length, "| starts:", dsKey.slice(0, 4) || "EMPTY");
+  res.json({
+    deepgram_configured: !!dgKey,
+    deepgram_key_length: dgKey.length,
+    deepseek_configured: !!dsKey,
+    deepseek_key_length: dsKey.length,
+  });
+});
+
 // POST /api/tts  →  Deepgram Text-to-Speech proxy
 app.post("/api/tts", async (req, res) => {
   const { text, model = "aura-2-celeste-es" } = req.body;
-  if (!text) return res.status(400).json({ error: "text is required" });
+  console.log("[TTS] Request received | text length:", text?.length ?? 0, "| model:", model);
+
+  if (!text) {
+    console.warn("[TTS] Missing text in request body");
+    return res.status(400).json({ error: "text is required" });
+  }
 
   const deepgramKey = process.env.DEEPGRAM_API_KEY || "";
-  if (!deepgramKey) return res.status(503).json({ error: "TTS not configured" });
+  console.log("[TTS] DEEPGRAM_API_KEY present:", !!deepgramKey, "| key length:", deepgramKey.length);
+
+  if (!deepgramKey) {
+    console.error("[TTS] DEEPGRAM_API_KEY is not set in environment!");
+    return res.status(503).json({ error: "TTS not configured - missing DEEPGRAM_API_KEY" });
+  }
+
+  const url = `https://api.deepgram.com/v1/speak?model=${model}`;
+  console.log("[TTS] Calling Deepgram:", url);
 
   try {
-    const upstream = await fetch(
-      `https://api.deepgram.com/v1/speak?model=${model}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${deepgramKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ text })
-      }
-    );
+    const upstream = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${deepgramKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text })
+    });
+
+    console.log("[TTS] Deepgram response status:", upstream.status, upstream.statusText);
+    console.log("[TTS] Deepgram response headers:", Object.fromEntries(upstream.headers.entries()));
 
     if (!upstream.ok) {
       const errBody = await upstream.text();
-      console.error("Deepgram error:", upstream.status, errBody);
-      return res.status(upstream.status).json({ error: "Deepgram TTS failed" });
+      console.error("[TTS] Deepgram error body:", errBody);
+      return res.status(upstream.status).json({ error: "Deepgram TTS failed", detail: errBody });
     }
 
     const audioBuffer = Buffer.from(await upstream.arrayBuffer());
+    console.log("[TTS] Audio buffer size:", audioBuffer.length, "bytes");
     res.set("Content-Type", "audio/mpeg");
     res.send(audioBuffer);
   } catch (err) {
-    console.error("TTS proxy error:", err);
-    res.status(500).json({ error: "TTS proxy error" });
+    console.error("[TTS] Fetch error:", err);
+    res.status(500).json({ error: "TTS proxy error", detail: String(err) });
   }
 });
 
 // POST /api/chat  →  Deepseek LLM proxy
 app.post("/api/chat", async (req, res) => {
   const { messages: chatMessages, systemPrompt } = req.body;
-  if (!chatMessages) return res.status(400).json({ error: "messages is required" });
+  console.log("[CHAT] Request received | messages count:", chatMessages?.length ?? 0, "| systemPrompt present:", !!systemPrompt);
+
+  if (!chatMessages) {
+    console.warn("[CHAT] Missing messages in request body");
+    return res.status(400).json({ error: "messages is required" });
+  }
 
   const deepseekKey = process.env.DEEPSEEK_API_KEY || "";
-  if (!deepseekKey) return res.status(503).json({ error: "Chat AI not configured" });
+  console.log("[CHAT] DEEPSEEK_API_KEY present:", !!deepseekKey, "| key length:", deepseekKey.length);
+
+  if (!deepseekKey) {
+    console.error("[CHAT] DEEPSEEK_API_KEY is not set in environment!");
+    return res.status(503).json({ error: "Chat AI not configured - missing DEEPSEEK_API_KEY" });
+  }
 
   const payloadMessages = systemPrompt
     ? [{ role: "system", content: systemPrompt }, ...chatMessages]
     : chatMessages;
 
+  console.log("[CHAT] Total messages to Deepseek:", payloadMessages.length);
+
   try {
+    console.log("[CHAT] Calling Deepseek API...");
     const upstream = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
@@ -1224,17 +1265,20 @@ app.post("/api/chat", async (req, res) => {
       })
     });
 
+    console.log("[CHAT] Deepseek response status:", upstream.status, upstream.statusText);
+
     if (!upstream.ok) {
       const errBody = await upstream.text();
-      console.error("Deepseek error:", upstream.status, errBody);
-      return res.status(upstream.status).json({ error: "Deepseek chat failed" });
+      console.error("[CHAT] Deepseek error body:", errBody);
+      return res.status(upstream.status).json({ error: "Deepseek chat failed", detail: errBody });
     }
 
     const data = await upstream.json();
+    console.log("[CHAT] Deepseek success | tokens used:", data.usage?.total_tokens ?? "unknown");
     res.json(data);
   } catch (err) {
-    console.error("Chat proxy error:", err);
-    res.status(500).json({ error: "Chat proxy error" });
+    console.error("[CHAT] Fetch error:", err);
+    res.status(500).json({ error: "Chat proxy error", detail: String(err) });
   }
 });
 
@@ -1242,4 +1286,7 @@ app.post("/api/chat", async (req, res) => {
 
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log("[STARTUP] DEEPGRAM_API_KEY configured:", !!process.env.DEEPGRAM_API_KEY);
+  console.log("[STARTUP] DEEPSEEK_API_KEY configured:", !!process.env.DEEPSEEK_API_KEY);
 });
+
