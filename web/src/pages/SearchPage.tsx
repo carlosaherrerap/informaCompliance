@@ -731,40 +731,63 @@ export default function SearchPage() {
                           <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">INFORMACIÓN PERSONAL</h5>
                         </div>
                         <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
-                          <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
-                          {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />}
-                          <InfoRow label="Ubicación" value={`${detailData.entidad.distrito}, ${detailData.entidad.departamento}`} />
-                          <InfoRow label="Dirección" value={detailData.entidad.direccion} />
-                          <InfoRow label="Rubro" value={detailData.entidad.rubro} />
+                          {detailData.natural ? (
+                            <>
+                              <InfoRow label="Nombres" value={detailData.natural.nombre || '-'} />
+                              <InfoRow label="Apellido Paterno" value={detailData.natural.ape_pat || '-'} />
+                              <InfoRow label="Apellido Materno" value={detailData.natural.ape_mat || '-'} />
+                              <InfoRow label="DNI" value={detailData.entidad.documento || '-'} />
+                              <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />
+                              <InfoRow label="Estado Civil" value={
+                                detailData.extension?.natural?.estado_civil 
+                                  ? (function(ec: string, g: string) {
+                                      const isF = g === 'F';
+                                      if(ec === 'C') return isF ? 'Casada' : 'Casado';
+                                      if(ec === 'D') return isF ? 'Divorciada' : 'Divorciado';
+                                      if(ec === 'S') return isF ? 'Soltera' : 'Soltero';
+                                      if(ec === 'V') return isF ? 'Viuda' : 'Viudo';
+                                      return ec;
+                                    })(detailData.extension.natural.estado_civil.toUpperCase(), detailData.natural.sexo)
+                                  : '-'
+                              } />
+                            </>
+                          ) : (
+                            <>
+                              <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
+                              <InfoRow label="Razón Social" value={detailData.juridica?.razon_social || '-'} />
+                              <InfoRow label="RUC" value={detailData.entidad.documento || '-'} />
+                            </>
+                          )}
                         </div>
                       </div>
 
-                      {/* ATRIBUTOS EXTENDIDOS */}
+                      {/* DATOS COMPLEMENTARIOS */}
                       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
                         <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
                           <span className="size-2 rounded-full bg-slate-600"></span>
-                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">Atributos Extendidos</h5>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">Datos Complementarios</h5>
                         </div>
                         <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
-                          {detailData.extension.natural ? (
+                          {detailData.natural ? (
                             <>
-                              <InfoRow label="Fec. Nacimiento" value={
-                                detailData.extension.natural.fec_nac
+                              <InfoRow label="Fecha de Nacimiento" value={
+                                detailData.extension?.natural?.fec_nac
                                   ? new Date(detailData.extension.natural.fec_nac).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')
-                                  : ''
+                                  : '-'
                               } />
-                              <InfoRow label="Nacionalidad" value={detailData.extension.natural.nacionalidad} />
-                              <InfoRow label="Instrucción" value={detailData.extension.natural.grado_instruccion} />
-                            </>
-                          ) : detailData.extension.juridica ? (
-                            <>
-                              <InfoRow label="Representante" value="PENDIENTE DE CARGA" />
-                              <InfoRow label="Capital Social" value="ALTO" />
+                              <InfoRow label="Departamento" value={detailData.entidad.departamento || '-'} />
+                              <InfoRow label="Provincia" value={detailData.entidad.provincia || '-'} />
+                              <InfoRow label="Distrito" value={detailData.entidad.distrito || '-'} />
+                              <InfoRow label="Grado de Instrucción" value={detailData.extension?.natural?.ultimo_grado || detailData.extension?.natural?.grado_instruccion || '-'} />
                             </>
                           ) : (
-                            <div className="flex h-full items-center justify-center py-6">
-                              <p className="text-[10px] text-slate-400 italic font-bold uppercase">Datos no disponibles</p>
-                            </div>
+                            <>
+                              <InfoRow label="Departamento" value={detailData.entidad.departamento || '-'} />
+                              <InfoRow label="Provincia" value={detailData.entidad.provincia || '-'} />
+                              <InfoRow label="Distrito" value={detailData.entidad.distrito || '-'} />
+                              <InfoRow label="Dirección" value={detailData.entidad.direccion || '-'} />
+                              <InfoRow label="Rubro" value={detailData.entidad.rubro || '-'} />
+                            </>
                           )}
                         </div>
                       </div>

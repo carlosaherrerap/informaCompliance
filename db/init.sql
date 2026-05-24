@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS extension_natural (
   estatura INTEGER,
   estado_civil VARCHAR(50),
   nacionalidad VARCHAR(100),
-  grado_instruccion VARCHAR(100)
+  grado_instruccion VARCHAR(100),
+  ultimo_grado VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS extension_judicial (

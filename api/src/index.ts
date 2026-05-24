@@ -40,8 +40,27 @@ async function initDb() {
       );
     `);
 
-    if (!tableExists.rows[0].exists) {
-      console.log("Initializing database schema...");
+    let needsReset = false;
+    if (tableExists.rows[0].exists) {
+      const colExists = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.columns 
+          WHERE table_schema = 'public' 
+          AND table_name = 'extension_natural'
+          AND column_name = 'ultimo_grado'
+        );
+      `);
+      if (!colExists.rows[0].exists) {
+        needsReset = true;
+      }
+    } else {
+      needsReset = true;
+    }
+
+    if (needsReset) {
+      console.log("Initializing database schema (dropping if exists)...");
+      await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+      
       const initSqlPath = path.join(process.cwd(), "db", "init.sql");
       const seedSqlPath = path.join(process.cwd(), "db", "seed.sql");
 
@@ -664,13 +683,14 @@ app.get("/entity/:id", async (req, res) => {
       WHERE e.id=$1`, [id]);
     const natural = await pool.query("SELECT * FROM personas_naturales WHERE id_entidades=$1", [id]);
     const juridica = await pool.query("SELECT * FROM personas_juridicas WHERE id_entidades=$1", [id]);
+    const extension = await pool.query("SELECT * FROM extension_natural WHERE id_entidades=$1", [id]);
     const manchas = await pool.query(`
       SELECT hm.*, tl.nombre as tipo_lista_nombre 
       FROM historial_manchas hm 
       LEFT JOIN tipo_lista tl ON tl.id = hm.id_tipo_lista 
       WHERE hm.id_entidades=$1 
       ORDER BY hm.fecha_registro DESC`, [id]);
-    res.json({ entidad: entidad.rows[0], natural: natural.rows[0], juridica: juridica.rows[0], manchas: manchas.rows });
+    res.json({ entidad: entidad.rows[0], natural: natural.rows[0], extension_natural: extension.rows[0], juridica: juridica.rows[0], manchas: manchas.rows });
   } catch {
     res.status(500).json({ error: "detalle falló" });
   }
@@ -762,8 +782,12 @@ app.post("/entity", requireAuth, async (req: any, res) => {
     // 2. Insert into specific table based on entity type
     if (b.tipo_entidad === 'natural') {
       await client.query(
-        "INSERT INTO personas_naturales(id_entidades, nombre, ape_pat, ape_mat) VALUES($1,$2,$3,$4)",
-        [id, b.nombre || "", b.ape_pat || "", b.ape_mat || ""]
+        "INSERT INTO personas_naturales(id_entidades, nombre, ape_pat, ape_mat, sexo) VALUES($1,$2,$3,$4,$5)",
+        [id, b.nombre || "", b.ape_pat || "", b.ape_mat || "", b.sexo || b.genero || null]
+      );
+      await client.query(
+        "INSERT INTO extension_natural(id_entidades, estado_civil, ultimo_grado) VALUES($1,$2,$3)",
+        [id, b.estado_civil || "", b.ultimo_grado || ""]
       );
     } else {
       await client.query(

@@ -12,12 +12,12 @@ export function LoadPage() {
     function downloadTemplate(type: 'natural' | 'juridica' | 'absoluta') {
         let headers: string[] = [];
         if (type === 'natural') {
-            headers = ["nombres", "tipo_documento", "documento", "pais", "departamento", "provincia", "distrito", "direccion", "rubro", "tipo_lista", "descripcion_mancha", "link", "fecha_registro"];
+            headers = ["nombres", "tipo_documento", "documento", "pais", "departamento", "provincia", "distrito", "direccion", "rubro", "tipo_lista", "descripcion_mancha", "link", "fecha_registro", "genero", "estado_civil", "ultimo_grado"];
         } else if (type === 'juridica') {
             headers = ["razon_social", "tipo_documento", "documento", "pais", "departamento", "provincia", "distrito", "direccion", "rubro", "tipo_lista", "descripcion_mancha", "link", "fecha_registro"];
         } else {
             // Absolute Base format
-            headers = ["FECHA ACTUAL", "DOCUMENTO", "DENOMINACION", "OBSERVACION", "NOMBRE", "SEGUNDO NOMBRE", "APE PAT", "APE MAT"];
+            headers = ["FECHA ACTUAL", "DOCUMENTO", "DENOMINACION", "OBSERVACION", "NOMBRE", "SEGUNDO NOMBRE", "APE PAT", "APE MAT", "GENERO", "ESTADO CIVIL", "ULTIMO GRADO"];
         }
 
         const ws = XLSX.utils.aoa_to_sheet([headers]);
@@ -64,6 +64,9 @@ export function LoadPage() {
                             if (!payload.nombre && row["DENOMINACION"]) {
                                 payload.nombre = row["DENOMINACION"];
                             }
+                            payload.genero = row["GENERO"] || "";
+                            payload.estado_civil = row["ESTADO CIVIL"] || "";
+                            payload.ultimo_grado = row["ULTIMO GRADO"] || "";
                         } else {
                             payload.razon_social = row["DENOMINACION"] || "";
                             payload.nombre = row["DENOMINACION"] || ""; // Backup for some logic
