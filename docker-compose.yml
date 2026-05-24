@@ -53,6 +53,8 @@ services:
     build: ./web
     environment:
       VITE_API_URL: ${VITE_API_URL}
+      VITE_DEEPSEEK_API_KEY: ${VITE_DEEPSEEK_API_KEY}
+      VITE_DEEPGRAM_API_KEY: ${VITE_DEEPGRAM_API_KEY}
     ports:
       - "5174:5173"
     depends_on:

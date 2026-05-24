@@ -115,7 +115,7 @@ export default function HomePage() {
       const response = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-celeste-es", {
         method: "POST",
         headers: {
-          "Authorization": "Token 4d920e71e80ea789dd881ba29aaf2d89cb03bf9e",
+          "Authorization": `Token ${import.meta.env.VITE_DEEPGRAM_API_KEY || ""}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ text: textToSpeak })
@@ -206,7 +206,7 @@ export default function HomePage() {
       const response = await fetch("https://api.deepseek.com/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer sk-b4adfbb0f89743bc8be22f20e0b60f8f",
+          "Authorization": `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || ""}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
