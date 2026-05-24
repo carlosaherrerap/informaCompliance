@@ -541,12 +541,12 @@ app.get("/search", requireAuth, async (req, res) => {
       FROM entidades e
       LEFT JOIN tipo_documento td ON td.id = e.id_tipo_documento
       LEFT JOIN personas_naturales pn ON pn.id_entidades = e.id
-      WHERE NOT ${isSearching} OR (
+      WHERE e.tipo_entidad = 'natural' AND (NOT ${isSearching} OR (
         ($1 != '' AND LOWER(pn.nombre) LIKE $5) OR
         ($2 != '' AND LOWER(pn.ape_pat) LIKE $6) OR
         ($3 != '' AND LOWER(pn.ape_mat) LIKE $7) OR
         ($4 != '' AND LOWER(e.documento) LIKE $8)
-      )
+      ))
     `;
 
     const juridicaQuery = `
@@ -565,10 +565,10 @@ app.get("/search", requireAuth, async (req, res) => {
       FROM entidades e
       LEFT JOIN tipo_documento td ON td.id = e.id_tipo_documento
       LEFT JOIN personas_juridicas pj ON pj.id_entidades = e.id
-      WHERE NOT ${isSearching} OR (
+      WHERE e.tipo_entidad = 'juridica' AND (NOT ${isSearching} OR (
         ($1 != '' AND LOWER(pj.razon_social) LIKE $5) OR
         ($4 != '' AND LOWER(e.documento) LIKE $8)
-      )
+      ))
     `;
 
     const combinedQuery = `
