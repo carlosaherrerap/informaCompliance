@@ -7,7 +7,8 @@ export default function HomePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
-    navigate("/login");
+    // Full redirect to root to avoid black screen / React Router state issues
+    window.location.href = "/";
   };
 
   // Chat and AI Assistant States
@@ -114,19 +115,16 @@ export default function HomePage() {
     }
   };
 
-  // Deepgram TTS call
+  // Deepgram TTS call — routed through backend proxy
   const speakWithDeepgram = async (textToSpeak: string, messageIndex: number) => {
-    console.log("Deepgram API Key cargada:", !!import.meta.env.VITE_DEEPGRAM_API_KEY);
+    const apiBase = import.meta.env.VITE_API_URL || "";
     try {
-      const response = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-celeste-es", {
+      const response = await fetch(`${apiBase}/api/tts`, {
         method: "POST",
-        headers: {
-          "Authorization": `Token ${import.meta.env.VITE_DEEPGRAM_API_KEY || ""}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: textToSpeak })
       });
-      if (!response.ok) throw new Error("Deepgram API synthesis failed");
+      if (!response.ok) throw new Error("TTS proxy failed");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
 
@@ -197,34 +195,26 @@ export default function HomePage() {
     }
     No agregues explicaciones fuera del JSON.`;
 
-    const payloadMessages = [
-      { role: "system", content: systemPrompt },
-      ...messages.map(m => ({
-        role: m.sender === "user" ? "user" : "assistant",
-        content: m.sender === "user" ? m.text : JSON.stringify({ text: m.text, audio_text: m.audioText || "" })
-      })),
-      { role: "user", content: text }
-    ];
-
     const currentBotIndex = messages.length + 1; // position of the bot message once added
+    const apiBase = import.meta.env.VITE_API_URL || "";
 
     try {
-      console.log("Deepseek API Key cargada:", !!import.meta.env.VITE_DEEPSEEK_API_KEY);
-      const response = await fetch("https://api.deepseek.com/chat/completions", {
+      const conversationMessages = messages.map(m => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.sender === "user" ? m.text : JSON.stringify({ text: m.text, audio_text: m.audioText || "" })
+      }));
+      conversationMessages.push({ role: "user", content: text });
+
+      const response = await fetch(`${apiBase}/api/chat`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || ""}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: payloadMessages,
-          temperature: 0.3,
-          stream: false
+          messages: conversationMessages,
+          systemPrompt
         })
       });
 
-      if (!response.ok) throw new Error("Deepseek connection failed");
+      if (!response.ok) throw new Error("Chat proxy failed");
       const data = await response.json();
       const rawContent = data.choices[0].message.content;
       const parsed = parseDeepseekResponse(rawContent);

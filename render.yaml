@@ -26,6 +26,10 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
       - key: OAUTH_CALLBACK_URL
         value: https://informaperu-backend.onrender.com/auth/google/callback
 
@@ -45,10 +49,6 @@ services:
         value: https://informaperu-backend.onrender.com
       - key: VITE_GOOGLE_CLIENT_ID
         value: TU_CLIENT_ID_DE_GOOGLE
-      - key: VITE_DEEPSEEK_API_KEY
-        sync: false
-      - key: VITE_DEEPGRAM_API_KEY
-        sync: false
 
 databases:
   - name: informaperu-db

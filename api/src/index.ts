@@ -1159,6 +1159,87 @@ app.get("/operaciones/stats", requireAuth, async (req: any, res) => {
   }
 });
 
+// ─── AI Proxy Routes (keeps API keys server-side) ────────────────────────────
+
+// POST /api/tts  →  Deepgram Text-to-Speech proxy
+app.post("/api/tts", async (req, res) => {
+  const { text, model = "aura-2-celeste-es" } = req.body;
+  if (!text) return res.status(400).json({ error: "text is required" });
+
+  const deepgramKey = process.env.DEEPGRAM_API_KEY || "";
+  if (!deepgramKey) return res.status(503).json({ error: "TTS not configured" });
+
+  try {
+    const upstream = await fetch(
+      `https://api.deepgram.com/v1/speak?model=${model}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${deepgramKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      }
+    );
+
+    if (!upstream.ok) {
+      const errBody = await upstream.text();
+      console.error("Deepgram error:", upstream.status, errBody);
+      return res.status(upstream.status).json({ error: "Deepgram TTS failed" });
+    }
+
+    const audioBuffer = Buffer.from(await upstream.arrayBuffer());
+    res.set("Content-Type", "audio/mpeg");
+    res.send(audioBuffer);
+  } catch (err) {
+    console.error("TTS proxy error:", err);
+    res.status(500).json({ error: "TTS proxy error" });
+  }
+});
+
+// POST /api/chat  →  Deepseek LLM proxy
+app.post("/api/chat", async (req, res) => {
+  const { messages: chatMessages, systemPrompt } = req.body;
+  if (!chatMessages) return res.status(400).json({ error: "messages is required" });
+
+  const deepseekKey = process.env.DEEPSEEK_API_KEY || "";
+  if (!deepseekKey) return res.status(503).json({ error: "Chat AI not configured" });
+
+  const payloadMessages = systemPrompt
+    ? [{ role: "system", content: systemPrompt }, ...chatMessages]
+    : chatMessages;
+
+  try {
+    const upstream = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${deepseekKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: payloadMessages,
+        temperature: 0.3,
+        stream: false
+      })
+    });
+
+    if (!upstream.ok) {
+      const errBody = await upstream.text();
+      console.error("Deepseek error:", upstream.status, errBody);
+      return res.status(upstream.status).json({ error: "Deepseek chat failed" });
+    }
+
+    const data = await upstream.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Chat proxy error:", err);
+    res.status(500).json({ error: "Chat proxy error" });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
