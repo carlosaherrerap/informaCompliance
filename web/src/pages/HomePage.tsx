@@ -111,6 +111,7 @@ export default function HomePage() {
 
   // Deepgram TTS call
   const speakWithDeepgram = async (textToSpeak: string, messageIndex: number) => {
+    console.log("Deepgram API Key cargada:", !!import.meta.env.VITE_DEEPGRAM_API_KEY);
     try {
       const response = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-celeste-es", {
         method: "POST",
@@ -203,6 +204,7 @@ export default function HomePage() {
     const currentBotIndex = messages.length + 1; // position of the bot message once added
 
     try {
+      console.log("Deepseek API Key cargada:", !!import.meta.env.VITE_DEEPSEEK_API_KEY);
       const response = await fetch("https://api.deepseek.com/chat/completions", {
         method: "POST",
         headers: {
