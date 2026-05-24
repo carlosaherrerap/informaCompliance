@@ -66,9 +66,9 @@ export default function RiskMatrixPage() {
     { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
   ];
 
@@ -169,7 +169,14 @@ export default function RiskMatrixPage() {
                   style={{backgroundColor: 'transparent'}}
                 >
                   <span className="material-symbols-outlined text-xl">{m.icon}</span>
-                  {!isCollapsed && <span>{m.name}</span>}
+                  {!isCollapsed && (
+                    <span className="flex items-center gap-1.5">
+                      <span>{m.name}</span>
+                      {!m.enabled && (
+                        <span className="material-symbols-outlined text-[12px] text-slate-400">lock</span>
+                      )}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

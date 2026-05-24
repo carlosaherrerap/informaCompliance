@@ -37,9 +37,9 @@ export default function SearchPage() {
     { name: "Listas Negativas", icon: "search", enabled: true, href: "/busqueda" },
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Reporte de Operaciones", icon: "receipt_long", enabled: false, href: "/reporte-operaciones" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
   ];
 
@@ -237,28 +237,201 @@ export default function SearchPage() {
     }
   }
 
-  const exportarPDF = (entity: any) => {
-    const doc = new jsPDF();
-    const title = entity.tipo === 'natural' ? `${entity.nombre} ${entity.ape_pat} ${entity.ape_mat}` : entity.nombre;
+  const getBase64ImageFromUrl = async (url: string): Promise<string> => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
 
+  const formatDateTime = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const strHours = String(hours).padStart(2, '0');
+    return `${day}-${month}-${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+  };
+
+  const exportarPDF = async (entity: any) => {
+    let fullData = entity;
+    const token = localStorage.getItem("auth_token") || "";
+
+    if (!entity.manchas || !entity.entidad) {
+      try {
+        const entityId = entity.id;
+        if (entityId) {
+          const r = await fetch(`${apiUrl}/entity/${entityId}/detail-access`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (r.ok) {
+            fullData = await r.json();
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching detail for PDF", e);
+      }
+    }
+
+    const doc = new jsPDF();
+    
+    try {
+      const logoBase64 = await getBase64ImageFromUrl("/logo-informaPeru.jpg");
+      doc.addImage(logoBase64, 'JPEG', 14, 10, 48, 16);
+    } catch (e) {
+      console.warn("Could not load logo image for PDF", e);
+    }
+
+    let username = "Advisor Tools Comply";
+    if (token) {
+      try {
+        const payload: any = JSON.parse(atob(token.split(".")[1]));
+        if (payload.username) {
+          username = payload.username;
+        } else if (payload.email) {
+          username = payload.email.split("@")[0];
+        }
+      } catch {}
+    }
+
+    const formattedDate = formatDateTime(new Date());
+
+    doc.setFont("Helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("Ficha de Verificación - INFORMA PERÚ", 14, 20);
-    doc.setFontSize(12);
-    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
+    doc.text("Lista Negativa", 14, 38);
+
+    doc.setFontSize(11);
+    doc.setFont("Helvetica", "bold");
+    doc.text("Usuario:", 14, 46);
+    doc.setFont("Helvetica", "normal");
+    doc.text(username, 32, 46);
+
+    doc.setFont("Helvetica", "bold");
+    doc.text("Fecha:", 14, 53);
+    doc.setFont("Helvetica", "normal");
+    doc.text(formattedDate, 28, 53);
+
+    const ent = fullData.entidad || fullData;
+    const isNatural = ent.tipo_entidad === 'natural' || ent.tipo === 'natural';
+    
+    const detailRows = [
+      [
+        `TIPO: ${isNatural ? 'N' : 'J'}`,
+        `CARGO: ${ent.cargo || '-'}`
+      ],
+      [
+        `APELLIDOS: ${isNatural ? `${fullData.natural?.ape_pat || ent.ape_pat || ""} ${fullData.natural?.ape_mat || ent.ape_mat || ""}`.trim().toUpperCase() : '-'}`,
+        `FECHA DE REGISTRO/NACIMIENTO: ${fullData.extension?.natural?.fec_nac ? new Date(fullData.extension.natural.fec_nac).toLocaleDateString('es-PE').replace(/\//g, '-') : '-'}`
+      ],
+      [
+        `NOMBRES: ${isNatural ? (fullData.natural?.nombre || ent.nombre || "").toUpperCase() : (fullData.juridica?.razon_social || ent.nombre || "").toUpperCase()}`,
+        `LUGAR DE NACIMIENTO: ${fullData.extension?.natural?.nacionalidad || ent.distrito || '-'}`
+      ],
+      [
+        `IDENTIFICACIÓN: ${ent.documento || '-'}`,
+        `LISTA: ${fullData.manchas?.[0]?.tipo_lista_nombre || 'NINGUNA'}`
+      ],
+      [
+        `DIRECCIÓN/PASAPORTE: ${ent.direccion || '-'}`,
+        ''
+      ]
+    ];
 
     autoTable(doc, {
-      startY: 35,
-      head: [['Campo', 'Valor']],
-      body: [
-        ['Nombre/Razón Social', title],
-        ['Documento', entity.documento],
-        ['Tipo', entity.tipo === 'natural' ? 'Persona Natural' : 'Persona Jurídica'],
-        ['ID Sistema', `#${String(entity.id).padStart(5, "0")}`]
-      ],
+      startY: 60,
+      head: [[{ content: 'DETALLE', colSpan: 2 }]],
+      body: detailRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [50, 80, 142], // Brand Blue #32508E
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left',
+      },
+      bodyStyles: {
+        textColor: [30, 41, 59], // slate-800
+        fontSize: 8,
+        fontStyle: 'bold',
+        cellPadding: 3,
+        lineColor: [226, 232, 240], // slate-200
+        lineWidth: 0.5,
+      },
+      columnStyles: {
+        0: { cellWidth: 91 },
+        1: { cellWidth: 91 },
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // slate-50
+      }
     });
 
-    doc.save(`Ficha_${entity.documento}.pdf`);
+    const finalYOfFirstTable = (doc as any).lastAutoTable.finalY || 120;
+    const obsRows: any[] = [];
+    
+    if (fullData.manchas && fullData.manchas.length > 0) {
+      fullData.manchas.forEach((m: any, index: number) => {
+        if (index > 0) {
+          obsRows.push([{ content: '------------------------------------------------------------------------------------------', colSpan: 2, styles: { halign: 'center', textColor: [148, 163, 184] } }]);
+        }
+        obsRows.push([{ content: `DESCRIPCIÓN: ${m.descripcion || '-'}`, colSpan: 2 }]);
+        obsRows.push([
+          `ALIAS: ${m.alias || '-'}`,
+          `LINK: ${m.link || '-'}`
+        ]);
+      });
+    } else {
+      obsRows.push([{ content: 'DESCRIPCIÓN: CONFORME. NO SE REGISTRAN ANTECEDENTES NEGATIVOS EN LAS BASES CONSULTADAS.', colSpan: 2 }]);
+      obsRows.push([
+        'ALIAS: -',
+        'LINK: -'
+      ]);
+    }
+
+    autoTable(doc, {
+      startY: finalYOfFirstTable + 8,
+      head: [[{ content: 'OBSERVACIONES', colSpan: 2 }]],
+      body: obsRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [50, 80, 142], // Brand Blue #32508E
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left',
+      },
+      bodyStyles: {
+        textColor: [30, 41, 59], // slate-800
+        fontSize: 8,
+        fontStyle: 'bold',
+        cellPadding: 3,
+        lineColor: [226, 232, 240], // slate-200
+        lineWidth: 0.5,
+      },
+      columnStyles: {
+        0: { cellWidth: 91 },
+        1: { cellWidth: 91 },
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // slate-50
+      }
+    });
+
+    doc.save(`Ficha_${ent.documento}.pdf`);
   };
+
+  const filledFieldsCount = [qNombre, qApePat, qApeMat, qDoc].filter(val => val.trim() !== "").length;
+  const hasExactMatch = results.some(r => r.match_count >= filledFieldsCount);
+  const showExactMatchWarning = isSearching && !hasExactMatch;
 
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
@@ -319,7 +492,14 @@ export default function SearchPage() {
                     style={{backgroundColor: 'transparent'}}
                   >
                     <span className="material-symbols-outlined text-xl">{m.icon}</span>
-                    {!isCollapsed && <span>{m.name}</span>}
+                    {!isCollapsed && (
+                      <span className="flex items-center gap-1.5">
+                        <span>{m.name}</span>
+                        {!m.enabled && (
+                          <span className="material-symbols-outlined text-[12px] text-slate-400">lock</span>
+                        )}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -421,25 +601,25 @@ export default function SearchPage() {
               <div className="bg-white dark:bg-slate-900 p-4 lg:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/50">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Nombres / Razón Social</label>
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Nombres / Razón Social</label>
                     <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: ALEJANDRO" value={qNombre} onChange={(e) => setQNombre(e.target.value)} />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Apellido Paterno</label>
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Apellido Paterno</label>
                     <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: VAZQUEZ" value={qApePat} onChange={(e) => setQApePat(e.target.value)} />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Apellido Materno</label>
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Apellido Materno</label>
                     <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: RAMOS" value={qApeMat} onChange={(e) => setQApeMat(e.target.value)} />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">DNI / RUC</label>
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">DNI / RUC</label>
                     <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="45672831" value={qDoc} onChange={(e) => setQDoc(e.target.value)} />
                   </div>
                 </div>
 
                 <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
-                  <button className="px-6 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-2" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>
+                  <button className="px-6 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>
                     <span className="material-symbols-outlined text-sm">refresh</span>
                     Limpiar
                   </button>
@@ -472,17 +652,17 @@ export default function SearchPage() {
               </div>
 
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto min-h-[200px]">
-                {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={results} onDetail={abrirDetalle} onPdf={exportarPDF} />}
+                {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={results} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={showExactMatchWarning} />}
               </div>
 
-              {isSearching && coincidences.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+               {isSearching && coincidences.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
-                    <div className="size-2 bg-slate-300 rounded-full"></div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Sugerencias por Similitud</h3>
+                    <div className="size-2 bg-slate-400 rounded-full"></div>
+                    <h3 className="text-sm font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Sugerencias por Similitud</h3>
                   </div>
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-dotted border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto opacity-75 grayscale-[0.3]">
-                    {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={coincidences} onDetail={abrirDetalle} onPdf={exportarPDF} />}
+                    {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={coincidences} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={false} />}
                   </div>
                 </div>
               )}
@@ -500,56 +680,57 @@ export default function SearchPage() {
       {/* DETALLES MODAL */}
       {
         isModalOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-2 sm:p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                <div>
-                  {/* <h3 className="font-black text-lg sm:text-2xl tracking-tight uppercase">Expediente de Incumplimiento</h3> */}
-                  {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ficha antiDark</p> */}
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-100 dark:bg-slate-950 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 bg-[#32508E] dark:bg-slate-900 border-b border-[#243d70] dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-white text-xl">folder_shared</span>
+                  <h3 className="font-black text-white text-xs sm:text-sm tracking-wider uppercase">EXPEDIENTE DE INCUMPLIMIENTO</h3>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="size-10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
-                  <span className="material-symbols-outlined font-bold">close</span>
+                <button onClick={() => setIsModalOpen(false)} className="size-9 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                  <span className="material-symbols-outlined font-bold text-lg">close</span>
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 {loadingDetail ? (
                   <div className="flex flex-col items-center justify-center h-64 gap-3">
-                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-100 border-b-primary"></div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Construyendo Informe...</p>
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-primary"></div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Construyendo Informe...</p>
                   </div>
                 ) : detailData && (
-                  <div className="space-y-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-slate-50 dark:bg-slate-800/30 rounded-3xl border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-5">
-                        <div className="size-16 sm:size-20 bg-primary text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40 overflow-hidden ring-4 ring-white dark:ring-slate-900">
-                          <span className="material-symbols-outlined text-4xl">account_circle</span>
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="size-14 bg-[#32508E] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#32508E]/20">
+                          <span className="material-symbols-outlined text-3xl">account_circle</span>
                         </div>
                         <div>
-                          <h4 className="text-xl sm:text-2xl font-black uppercase text-slate-900 dark:text-white leading-tight">
+                          <h4 className="text-lg font-black uppercase text-slate-900 dark:text-white leading-tight">
                             {detailData.natural ? `${detailData.natural.nombre} ${detailData.natural.ape_pat} ${detailData.natural.ape_mat}` : detailData.juridica?.razon_social}
                           </h4>
-                          <div className="flex items-center gap-3 mt-2">
-                            {/* <span className="bg-slate-900 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">{detailData.entidad.id % 2 === 0 ? 'SCORE 100/100' : 'SCORE 94/100'}</span> */}
-                            <p className="text-slate-500 font-bold tracking-widest text-[10px] uppercase italic opacity-75">
-                              DOC: {detailData.entidad.documento} • ID: #{String(detailData.entidad.id).padStart(5, '0')}
-                            </p>
-                          </div>
+                          <p className="text-slate-700 dark:text-slate-300 font-extrabold tracking-wider text-[10px] uppercase mt-1">
+                            DOC: <span className="text-[#32508E] font-black">{detailData.entidad.documento}</span> • ID: #{String(detailData.entidad.id).padStart(5, '0')}
+                          </p>
                         </div>
                       </div>
-                      <div className="bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
-                        <span className="material-symbols-outlined text-green-500 text-xl">database</span>
+                      <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3 self-start sm:self-center">
+                        <span className="material-symbols-outlined text-green-600 text-lg">database</span>
                         <div>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Busquedas Restantes</p>
-                          <p className="text-lg font-black text-primary leading-none">{tokens}</p>
+                          <p className="text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">Búsquedas Restantes</p>
+                          <p className="text-sm font-black text-[#32508E] dark:text-blue-400 leading-none">{tokens}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-4">
-                        <h5 className="font-black text-slate-900 dark:text-white uppercase text-xs tracking-widest border-l-4 border-primary pl-3">INFORMACION PERSONAL</h5>
-                        <div className="space-y-1 bg-slate-50/30 dark:bg-slate-800/20 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* INFORMACION PERSONAL */}
+                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                        <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-[#32508E]"></span>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">INFORMACIÓN PERSONAL</h5>
+                        </div>
+                        <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
                           <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
                           {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />}
                           <InfoRow label="Ubicación" value={`${detailData.entidad.distrito}, ${detailData.entidad.departamento}`} />
@@ -557,9 +738,14 @@ export default function SearchPage() {
                           <InfoRow label="Rubro" value={detailData.entidad.rubro} />
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        <h5 className="font-black text-slate-900 dark:text-white uppercase text-xs tracking-widest border-l-4 border-green-400 pl-3">Atributos Extendidos</h5>
-                        <div className="space-y-1 bg-slate-50/30 dark:bg-slate-800/20 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+
+                      {/* ATRIBUTOS EXTENDIDOS */}
+                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                        <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-slate-600"></span>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">Atributos Extendidos</h5>
+                        </div>
+                        <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
                           {detailData.extension.natural ? (
                             <>
                               <InfoRow label="Fec. Nacimiento" value={
@@ -575,60 +761,75 @@ export default function SearchPage() {
                               <InfoRow label="Representante" value="PENDIENTE DE CARGA" />
                               <InfoRow label="Capital Social" value="ALTO" />
                             </>
-                          ) : <p className="text-[10px] text-slate-400 italic font-bold text-center py-4 uppercase">Datos no disponibles para esta entidad</p>}
+                          ) : (
+                            <div className="flex h-full items-center justify-center py-6">
+                              <p className="text-[10px] text-slate-400 italic font-bold uppercase">Datos no disponibles</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="space-y-4 pt-4">
-                      <h5 className="font-black text-red-500 uppercase text-xs tracking-[0.2em] border-l-4 border-red-500 pl-3">Listas de Riesgo</h5>
+                    <div className="space-y-4">
                       {detailData.manchas.length > 0 ? (
-                        <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800">
-                          <table className="w-full text-left border-collapse">
-                            <thead>
-                              <tr className="bg-slate-50 dark:bg-slate-800/50">
-                                <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Lista</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">Descripción / Motivo</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 text-right">Enlace</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                              {detailData.manchas.map((m: any) => (
-                                <tr key={m.id} className="hover:bg-red-50/30 dark:hover:bg-red-900/5 transition-all group">
-                                  <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[8px] font-black rounded uppercase">
-                                      {m.tipo_lista_nombre || 'S/N'}
-                                    </span>
-                                  </td>
-                                  <td className="px-6 py-4">
-                                    <p className="text-[11px] text-slate-700 dark:text-slate-300 font-bold leading-tight">{m.descripcion}</p>
-                                    <p className="text-[8px] text-slate-400 uppercase mt-1">
-                                      Registrado el: {
-                                        m.fecha_registro && !m.fecha_registro.startsWith('1970') && !m.fecha_registro.startsWith('1969')
-                                          ? new Date(m.fecha_registro).toLocaleDateString('es-PE')
-                                          : 'PENDIENTE'
-                                      }
-                                    </p>
-                                  </td>
-                                  <td className="px-6 py-4 text-right">
-                                    {m.link ? (
-                                      <a href={m.link} target="_blank" className="inline-flex items-center gap-1 text-[9px] text-primary font-black hover:underline uppercase">
-                                        Oficial <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                                      </a>
-                                    ) : (
-                                      <span className="text-[8px] font-bold text-slate-300 uppercase">Sin link</span>
-                                    )}
-                                  </td>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-950/40 shadow-sm overflow-hidden">
+                          <div className="px-4 py-2.5 bg-[#EB3237] border-b border-red-650 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-white text-base">warning</span>
+                            <h5 className="font-black text-white uppercase text-[10px] tracking-widest">LISTAS DE RIESGO</h5>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-800/50">
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Lista</th>
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Descripción / Motivo</th>
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 text-right">Enlace</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                                {detailData.manchas.map((m: any) => (
+                                  <tr key={m.id} className="hover:bg-red-50/40 dark:hover:bg-red-950/10 transition-colors">
+                                    <td className="px-6 py-4">
+                                      <span className="px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[8px] font-black rounded uppercase border border-red-200 dark:border-red-900/55">
+                                        {m.tipo_lista_nombre || 'S/N'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <p className="text-[11px] text-slate-900 dark:text-slate-100 font-extrabold leading-tight uppercase">{m.descripcion}</p>
+                                      <p className="text-[8px] text-slate-500 dark:text-slate-400 uppercase mt-1.5 font-bold">
+                                        Registrado el: {
+                                          m.fecha_registro && !m.fecha_registro.startsWith('1970') && !m.fecha_registro.startsWith('1969')
+                                            ? new Date(m.fecha_registro).toLocaleDateString('es-PE')
+                                            : 'PENDIENTE'
+                                        }
+                                      </p>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                      {m.link ? (
+                                        <a href={m.link} target="_blank" className="inline-flex items-center gap-1 text-[9px] text-[#32508E] font-black hover:underline uppercase">
+                                          Oficial <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                                        </a>
+                                      ) : (
+                                        <span className="text-[8px] font-black text-slate-400 uppercase">Sin link</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center p-12 bg-green-50 dark:bg-green-900/10 rounded-[3rem] border-2 border-dashed border-green-200 text-center gap-2">
-                          <span className="material-symbols-outlined text-4xl text-green-500 animate-bounce">verified_user</span>
-                          <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-widest">¡Entidad Conforme!</p>
-                          <p className="text-[10px] text-green-600 font-medium max-w-xs uppercase">No se registran antecedentes negativos en las bases consultadas hoy.</p>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-green-200 dark:border-green-950/40 shadow-sm overflow-hidden">
+                          <div className="px-4 py-2.5 bg-green-600 border-b border-green-700 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-white text-base">verified_user</span>
+                            <h5 className="font-black text-white uppercase text-[10px] tracking-widest">LISTAS DE RIESGO</h5>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-10 text-center gap-2">
+                            <span className="material-symbols-outlined text-4xl text-green-500 animate-bounce">verified_user</span>
+                            <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-widest">¡Entidad Conforme!</p>
+                            <p className="text-[10px] text-green-600/80 font-bold max-w-sm uppercase">No se registran antecedentes negativos en las bases consultadas hoy.</p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -636,11 +837,11 @@ export default function SearchPage() {
                 )}
               </div>
 
-              <div className="p-6 sm:p-8 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-                <button onClick={() => setIsModalOpen(false)} className="px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-colors order-2 sm:order-1">CANCELAR</button>
-                <button onClick={() => exportarPDF(detailData?.entidad || {})} className="px-10 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-slate-400/30 dark:shadow-none flex items-center justify-center gap-3 order-1 sm:order-2 hover:bg-slate-800 transition-all">
-                  <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
-                  GUARDAR PDF
+              <div className="p-6 bg-slate-200/50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+                <button onClick={() => setIsModalOpen(false)} className="px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors order-2 sm:order-1">CANCELAR</button>
+                <button onClick={() => exportarPDF(detailData)} className="px-10 py-3 bg-[#32508E] hover:bg-[#243d70] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-200 dark:shadow-none flex items-center justify-center gap-3 order-1 sm:order-2 transition-all">
+                  <span className="material-symbols-outlined text-lg">download</span>
+                  DESCARGAR
                 </button>
               </div>
             </div>
@@ -658,12 +859,10 @@ export default function SearchPage() {
   );
 }
 
-function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onDetail: (id: number) => void, onPdf: (e: any) => void, isSearching: boolean }) {
-  const hasExactMatch = data.some(r => r.match_count >= 4);
-
+function ResultsTable({ data, onDetail, onPdf, isSearching, showWarning = false }: { data: any[], onDetail: (id: number) => void, onPdf: (e: any) => void, isSearching: boolean, showWarning?: boolean }) {
   return (
     <div className="space-y-6">
-      {isSearching && !hasExactMatch && (
+      {showWarning && (
         <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-2xl animate-in fade-in slide-in-from-top-2 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="size-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600">
@@ -685,11 +884,11 @@ function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onD
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                {isSearching && <th className="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest w-40">Nivel de Coincidencia</th>}
-                <th className="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Identidad / Razón</th>
-                <th className="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Identificación</th>
-                <th className="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Consulta</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                {isSearching && <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-40">Nivel de Coincidencia</th>}
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Identidad / Razón</th>
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Identificación</th>
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest text-right">Consulta</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -713,17 +912,17 @@ function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onD
                     <div className="font-black text-slate-900 dark:text-white uppercase truncate max-w-[280px] text-xs transition-colors group-hover:text-primary">
                       {r.tipo === "natural" ? `${r.nombre || ""} ${r.ape_pat || ""} ${r.ape_mat || ""}` : r.nombre}
                     </div>
-                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1 opacity-60">#{String(r.id).padStart(5, "0")} • {r.tipo === "natural" ? "Natural" : "Jurídica"}</div>
+                    <div className="text-[9px] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">#{String(r.id).padStart(5, "0")} • {r.tipo === "natural" ? "Natural" : "Jurídica"}</div>
                   </td>
                   <td className="px-6 py-6">
                     <div className="flex flex-col">
-                      <span className="text-xs font-black text-slate-600 dark:text-slate-400 tabular-nums">{r.documento}</span>
-                      <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">{r.tipo_documento_nombre || 'Documento'}</span>
+                      <span className="text-xs font-black text-slate-700 dark:text-slate-400 tabular-nums">{r.documento}</span>
+                      <span className="text-[9px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{r.tipo_documento_nombre || 'Documento'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-6 text-right">
                     <div className="flex justify-end items-center gap-3">
-                      <button onClick={() => onDetail(r.id)} className="flex items-center gap-2 px-4 py-2 bg-slate-900 group-hover:bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-200 dark:shadow-none">
+                      <button onClick={() => onDetail(r.id)} className="flex items-center gap-2 px-4 py-2 bg-[#32508E] hover:bg-[#243d70] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-blue-200 dark:shadow-none">
                         <span className="material-symbols-outlined text-sm">visibility</span>
                         Expediente
                       </button>
@@ -738,12 +937,10 @@ function ResultsTable({ data, onDetail, onPdf, isSearching }: { data: any[], onD
           </table>
         </div>
       ) : (
-        !hasExactMatch && (
-          <div className="py-20 text-center flex flex-col items-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-slate-200">folder_open</span>
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin registros disponibles para mostrar</p>
-          </div>
-        )
+        <div className="py-20 text-center flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined text-4xl text-slate-200">folder_open</span>
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin registros disponibles para mostrar</p>
+        </div>
       )}
     </div>
   );
@@ -760,8 +957,8 @@ function LoadingSkeleton() {
 
 function InfoRow({ label, value }: { label: string, value: string }) {
   return (
-    <div className="grid grid-cols-2 text-xs border-b border-slate-100 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-      <div className="px-4 py-2 border-r border-slate-100 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/30 font-bold text-slate-400 uppercase tracking-widest text-[9px] flex items-center">
+    <div className="grid grid-cols-2 text-xs border-b border-slate-200 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+      <div className="px-4 py-2 border-r border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest text-[9px] flex items-center">
         {label}
       </div>
       <div className="px-4 py-2 font-black text-slate-900 dark:text-white uppercase text-xs flex items-center">

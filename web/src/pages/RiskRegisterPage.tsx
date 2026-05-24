@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box, Flex, Text, Button, VStack, HStack, Heading, Select, Input, Textarea,
@@ -227,9 +227,55 @@ export default function RiskRegisterPage() {
       if (formData.control_frecuencia_oportuna === "NO") result = result / 2;
       if (formData.control_seguimiento_adecuado === "NO") result = result / 2;
 
-      let color = "#82E0AA"; // Green (safe)
-      if (result < 0.4) color = "#FF0000"; // Red (dangerous)
-      else if (result < 0.6) color = "#FF9900"; // Orange
+      // Calculate residual probability and impact for the color lookup
+      const sum = result;
+      
+      const probCeils: Record<string, number> = {
+        "Muy Alta": 100.00,
+        "Alta": 99.90,
+        "Media": 29.99,
+        "Baja": 9.99,
+        "Muy Baja": 4.99
+      };
+      
+      const probInherLabel = formData.probabilidad_nivel || "Muy Baja";
+      const valProbCeil = probCeils[probInherLabel] !== undefined ? probCeils[probInherLabel] : 4.99;
+      const rdxProb = (1 - sum) * valProbCeil;
+      
+      const probRanges = [
+        { label: "Muy Baja", min: 0.01, max: 4.99 },
+        { label: "Baja", min: 5.00, max: 9.99 },
+        { label: "Media", min: 10.00, max: 29.99 },
+        { label: "Alta", min: 30.00, max: 99.90 },
+        { label: "Muy Alta", min: 99.91, max: Infinity }
+      ];
+      
+      const foundProb = probRanges.find(r => rdxProb >= r.min && rdxProb <= r.max) || probRanges[0];
+      const resProb = foundProb.label;
+
+      const impEstim = Number(formData.impacto_estimado || 0);
+      const rdxImp = (1 - sum) * (impEstim / 4600);
+      
+      const compType = formData.tipo_empresa || "";
+      let typeIdx = 0;
+      if (compType === "Pequeña empresa") typeIdx = 1;
+      else if (compType === "Mediana empresa") typeIdx = 2;
+      else if (compType === "Gran empresa") typeIdx = 3;
+      
+      const impactsMaps = [
+        [[0, 1], [1, 10], [10, 20], [20, 40], [40, Infinity]],
+        [[0, 1], [1, 50], [50, 100], [100, 200], [200, Infinity]],
+        [[0, 1], [1, 250], [250, 300], [300, 450], [450, Infinity]],
+        [[0, 1], [1, 250], [250, 300], [300, 450], [450, Infinity]]
+      ];
+      
+      const ranges = impactsMaps[typeIdx];
+      const impLabels = ["Insignificante", "Menor", "Moderado", "Mayor", "Catastrófico"];
+      
+      const rangeIdx = ranges.findIndex(r => rdxImp >= r[0] && rdxImp <= r[1]);
+      const resImp = rangeIdx !== -1 ? impLabels[rangeIdx] : "Insignificante";
+
+      const color = getInherentColor(resProb, resImp);
       
       const resVal = result.toFixed(3);
       if (resVal !== String(formData.riesgo_residual_valor) || color !== formData.riesgo_residual_color) {
@@ -243,7 +289,8 @@ export default function RiskRegisterPage() {
   }, [
     formData.control_supervision, formData.control_tipo, 
     formData.control_periocidad, formData.control_operatividad,
-    formData.control_frecuencia_oportuna, formData.control_seguimiento_adecuado
+    formData.control_frecuencia_oportuna, formData.control_seguimiento_adecuado,
+    formData.probabilidad_nivel, formData.impacto_estimado, formData.tipo_empresa
   ]);
 
   const handleSave = async (estado: "EDITANDO" | "REGISTRADO") => {
@@ -282,6 +329,60 @@ export default function RiskRegisterPage() {
   const filteredProcesos = Array.isArray(links) 
     ? links.filter(l => String(l.id_area) === String(formData.area_id))
     : [];
+
+  const { residualProb, residualImp } = useMemo(() => {
+    const sum = Number(formData.riesgo_residual_valor || 0);
+    
+    // 1. Residual Probability
+    const probCeils: Record<string, number> = {
+      "Muy Alta": 100.00,
+      "Alta": 99.90,
+      "Media": 29.99,
+      "Baja": 9.99,
+      "Muy Baja": 4.99
+    };
+    
+    const probInherLabel = formData.probabilidad_nivel || "Muy Baja";
+    const valProbCeil = probCeils[probInherLabel] !== undefined ? probCeils[probInherLabel] : 4.99;
+    const rdxProb = (1 - sum) * valProbCeil;
+    
+    const probRanges = [
+      { label: "Muy Baja", min: 0.01, max: 4.99 },
+      { label: "Baja", min: 5.00, max: 9.99 },
+      { label: "Media", min: 10.00, max: 29.99 },
+      { label: "Alta", min: 30.00, max: 99.90 },
+      { label: "Muy Alta", min: 99.91, max: Infinity }
+    ];
+    
+    const foundProb = probRanges.find(r => rdxProb >= r.min && rdxProb <= r.max) || probRanges[0];
+    const residualProb = foundProb.label;
+
+    // 2. Residual Impact
+    const impEstim = Number(formData.impacto_estimado || 0);
+    const rdxImp = (1 - sum) * (impEstim / 4600);
+    
+    // Map company type to index
+    const compType = formData.tipo_empresa || "";
+    let typeIdx = 0; // default Microempresa
+    if (compType === "Pequeña empresa") typeIdx = 1;
+    else if (compType === "Mediana empresa") typeIdx = 2;
+    else if (compType === "Gran empresa") typeIdx = 3;
+    
+    const impactsMaps = [
+      [[0, 1], [1, 10], [10, 20], [20, 40], [40, Infinity]],      // Microempresa
+      [[0, 1], [1, 50], [50, 100], [100, 200], [200, Infinity]],   // Pequeña
+      [[0, 1], [1, 250], [250, 300], [300, 450], [450, Infinity]], // Mediana
+      [[0, 1], [1, 250], [250, 300], [300, 450], [450, Infinity]]  // Gran
+    ];
+    
+    const ranges = impactsMaps[typeIdx];
+    const impLabels = ["Insignificante", "Menor", "Moderado", "Mayor", "Catastrófico"];
+    
+    const rangeIdx = ranges.findIndex(r => rdxImp >= r[0] && rdxImp <= r[1]);
+    const residualImp = rangeIdx !== -1 ? impLabels[rangeIdx] : "Insignificante";
+    
+    return { residualProb, residualImp };
+  }, [formData.riesgo_residual_valor, formData.probabilidad_nivel, formData.impacto_estimado, formData.tipo_empresa]);
 
   const HeatMapPreview = ({ prob, imp }: { prob: string, imp: string }) => (
     <Box border="1px solid" borderColor="gray.300" borderRadius="md" p={2} bg="gray.50">
@@ -484,15 +585,25 @@ export default function RiskRegisterPage() {
                     </FormControl>
                  </Flex>
                  
-                 <Box py={2}>
-                    <Text fontSize="md" fontWeight="black" color="indigo.800">
-                       VALOR RESIDUAL: {formData.riesgo_residual_valor}
-                    </Text>
-                 </Box>
-              </VStack>
-              <Box flex={1} py={10}>
-                 <HeatMapPreview prob={formData.probabilidad_nivel} imp={formData.impacto_nivel} />
-              </Box>
+                  <Box py={2} className="space-y-1">
+                     <Text fontSize="md" fontWeight="black" color="indigo.800">
+                        VALOR RESIDUAL: {formData.riesgo_residual_valor}
+                     </Text>
+                     {formData.control_periocidad && formData.control_operatividad && (
+                       <>
+                         <Text fontSize="xs" fontWeight="bold" color="indigo.600">
+                            PROBABILIDAD RESIDUAL: {residualProb.toUpperCase()}
+                         </Text>
+                         <Text fontSize="xs" fontWeight="bold" color="indigo.600">
+                            IMPACTO RESIDUAL: {residualImp.toUpperCase()}
+                         </Text>
+                       </>
+                     )}
+                  </Box>
+               </VStack>
+               <Box flex={1} py={10}>
+                  <HeatMapPreview prob={residualProb} imp={residualImp} />
+               </Box>
            </Flex>
         </Box>
 
