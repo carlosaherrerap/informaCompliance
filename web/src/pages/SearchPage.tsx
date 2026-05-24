@@ -434,478 +434,500 @@ export default function SearchPage() {
   const showExactMatchWarning = isSearching && !hasExactMatch;
 
   return (
-    <div style={{ fontFamily: 'SF Pro Display, system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif', backgroundColor: '#f5f5f7', minHeight: '100vh', color: '#1d1d1f' }}>
+    <div className="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+      <div className="flex h-screen overflow-hidden relative">
+        {/* Overlay mobile */}
+        {isSidebarOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
+        )}
 
-      {/* ── Global Nav (Apple black bar) ─────────────────── */}
-      <nav style={{ backgroundColor: '#000000', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" style={{ height: 22, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
-          </button>
-          {modules.filter(m => m.enabled).map(m => (
-            <button key={m.name} onClick={() => navigate(m.href)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: location.pathname === m.href ? '#ffffff' : 'rgba(255,255,255,0.6)', fontSize: 12, letterSpacing: '-0.12px', padding: '0 4px', fontFamily: 'inherit', transition: 'color 0.15s' }}>
-              {m.name}
+        <aside className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#111827] flex flex-col shrink-0 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isCollapsed ? 'w-20' : 'w-72'}`}>
+          <div className={`h-20 flex items-center px-6 bg-white border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+            {!isCollapsed && (
+              <Link to="/" className="flex items-center gap-3">
+                <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-8 w-auto object-contain" />
+              </Link>
+            )}
+            {isCollapsed && (
+              <Link to="/" className="flex items-center justify-center">
+                <img src="/logo.png" alt="IP" className="h-10 w-10 object-contain" />
+              </Link>
+            )}
+            <button className="lg:hidden text-slate-400" onClick={() => setIsSidebarOpen(false)}>
+              <span className="material-symbols-outlined">close</span>
             </button>
-          ))}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 8, padding: '4px 10px' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#2997ff' }}>database</span>
-            <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 600, letterSpacing: '-0.12px' }}>{tokens ?? '–'}</span>
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '-0.08px' }}>búsquedas</span>
           </div>
-          <button
-            onClick={() => { localStorage.removeItem('auth_token'); window.location.href = '/'; }}
-            style={{ background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, borderRadius: 8, padding: '5px 12px', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4, transition: 'background 0.15s' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>logout</span>
-            <span style={{ letterSpacing: '-0.12px' }}>Salir</span>
-          </button>
-        </div>
-      </nav>
 
-      {/* ── Sub-nav frosted strip (Apple product nav) ─────── */}
-      <div style={{ backgroundColor: 'rgba(245,245,247,0.88)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderBottom: '1px solid rgba(0,0,0,0.08)', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 44, zIndex: 90 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#1d1d1f' }}>manage_search</span>
-          <span style={{ fontSize: 21, fontWeight: 600, color: '#1d1d1f', letterSpacing: '0.231px' }}>Listas Negativas</span>
-          {isSearching && (
-            <span style={{ background: 'rgba(0,102,204,0.1)', color: '#0066cc', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, letterSpacing: '-0.12px' }}>
-              {results.length} resultado{results.length !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {!isSearching && total > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <button disabled={page <= 1} onClick={() => consultar(page - 1)}
-                style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 9999, border: 'none', background: page <= 1 ? 'transparent' : 'rgba(0,0,0,0.05)', cursor: page <= 1 ? 'not-allowed' : 'pointer', opacity: page <= 1 ? 0.3 : 1 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
-              </button>
-              <span style={{ fontSize: 12, color: '#7a7a7a', letterSpacing: '-0.12px', minWidth: 40, textAlign: 'center' }}>pág. {page}</span>
-              <button disabled={page * 10 >= total} onClick={() => consultar(page + 1)}
-                style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 9999, border: 'none', background: page * 10 >= total ? 'transparent' : 'rgba(0,0,0,0.05)', cursor: page * 10 >= total ? 'not-allowed' : 'pointer', opacity: page * 10 >= total ? 0.3 : 1 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
-              </button>
-            </div>
-          )}
-          <button
-            onClick={() => { setShowProfileDropdown(!showProfileDropdown); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0066cc', color: '#ffffff', border: 'none', borderRadius: 9999, padding: '8px 18px', fontSize: 14, fontWeight: 400, cursor: 'pointer', letterSpacing: '-0.224px', fontFamily: 'inherit', transition: 'background 0.15s', position: 'relative' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>tune</span>
-            Herramientas
-          </button>
+          <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
+          <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+            {/* Toggle Button */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex w-full items-center justify-center py-2 rounded-xl text-slate-500 hover:bg-white/5 hover:text-white transition-all mb-4"
+            >
+              <span className="material-symbols-outlined transition-transform duration-300" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }}>
+                {isCollapsed ? 'menu_open' : 'menu_open'}
+              </span>
+            </button>
 
-          {/* Profile/Tools dropdown */}
-          {showProfileDropdown && (
-            <>
-              <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowProfileDropdown(false)} />
-              <div style={{ position: 'absolute', top: 96, right: 32, width: 260, background: '#ffffff', borderRadius: 18, boxShadow: '0 4px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', overflow: 'hidden', zIndex: 200 }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', margin: 0 }}>Herramientas</p>
-                </div>
-                <div style={{ padding: 8 }}>
-                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, border: 'none', background: 'none', cursor: 'pointer', color: '#0066cc', fontSize: 14, fontFamily: 'inherit', letterSpacing: '-0.224px', textAlign: 'left', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f7')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    onClick={() => { setShowProfileDropdown(false); (document.getElementById('massive-upload') as HTMLInputElement)?.click(); }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>upload_file</span>
-                    Carga Masiva Excel
-                  </button>
-                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, border: 'none', background: 'none', cursor: 'pointer', color: '#1d1d1f', fontSize: 14, fontFamily: 'inherit', letterSpacing: '-0.224px', textAlign: 'left', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f7')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    onClick={() => { setShowProfileDropdown(false); setIsScheduleModalOpen(true); }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>calendar_add_on</span>
-                    Programar Búsqueda
-                  </button>
-                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, border: 'none', background: 'none', cursor: 'pointer', color: '#1d1d1f', fontSize: 14, fontFamily: 'inherit', letterSpacing: '-0.224px', textAlign: 'left', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f7')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    onClick={() => { setShowProfileDropdown(false); setShowNotifDropdown(!showNotifDropdown); }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>notifications</span>
-                    Alertas del Sistema
-                    {notifications.length > 0 && (
-                      <span style={{ marginLeft: 'auto', background: '#ff3b30', color: '#fff', fontSize: 10, fontWeight: 700, borderRadius: 9999, padding: '1px 6px' }}>{notifications.length}</span>
+            <div className="space-y-4">
+              {!isCollapsed && <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Sistemas</p>}
+              <div className="space-y-2">
+                {/* Inicio Button - Reubicado */}
+                <button
+                  onClick={() => navigate('/')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+                  style={{backgroundColor: 'transparent'}}
+                >
+                  <span className="material-symbols-outlined text-xl">home</span>
+                  {!isCollapsed && <span>Inicio</span>}
+                </button>
+
+                {modules.map((m) => (
+                  <button
+                    key={m.name}
+                    disabled={!m.enabled}
+                    onClick={() => navigate(m.href)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
+                    style={{backgroundColor: 'transparent'}}
+                  >
+                    <span className="material-symbols-outlined text-xl">{m.icon}</span>
+                    {!isCollapsed && (
+                      <span className="flex items-center gap-1.5">
+                        <span>{m.name}</span>
+                        {!m.enabled && (
+                          <span className="material-symbols-outlined text-[12px] text-slate-400">lock</span>
+                        )}
+                      </span>
                     )}
                   </button>
-                  <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, border: 'none', background: 'none', cursor: 'pointer', color: '#0066cc', fontSize: 14, fontFamily: 'inherit', letterSpacing: '-0.224px', textAlign: 'left', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f7')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    onClick={() => { setShowProfileDropdown(false); downloadMassiveTemplate(); }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
-                    Plantilla Excel
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 mt-auto border-t border-white/5">
+              <button
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors font-bold uppercase text-[10px] tracking-widest ${isCollapsed ? 'justify-center' : ''}`}
+                onClick={() => { localStorage.removeItem("auth_token"); window.location.href = '/login'; }}
+              >
+                <span className="material-symbols-outlined text-xl">logout</span>
+                {!isCollapsed && <span>CERRAR SESIÓN</span>}
+              </button>
+            </div>
+          </nav>
+        </aside>
+
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+            <div className="flex items-center gap-4">
+              <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
+                <span className="material-symbols-outlined">menu</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 relative">
+              {/* Tokens usage info in header */}
+              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                <span className="material-symbols-outlined text-primary text-xl">database</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-primary uppercase leading-tight">{tokens ?? "-"}</span>
+                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Busquedas</span>
+                </div>
+              </div>
+
+              {/* Perfil Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 ${showProfileDropdown ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold'}`}
+                >
+                  <span className="material-symbols-outlined text-2xl">account_circle</span>
+                  <span className="text-[10px] uppercase tracking-widest hidden sm:block">Mi Cuenta</span>
+                  <span className={`material-symbols-outlined text-lg transition-transform duration-300 ${showProfileDropdown ? 'rotate-180' : ''}`}>expand_more</span>
+                </button>
+
+                {showProfileDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileDropdown(false)} />
+                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                      <div className="p-4 bg-slate-50/50 border-b border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Acciones y Herramientas</p>
+                      </div>
+                      <div className="p-2 space-y-1">
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-600 hover:bg-blue-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); }}>
+                          <span className="material-symbols-outlined text-xl text-blue-500">verified</span>
+                          <span>DDA (Ampliada)</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-green-600 hover:bg-green-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); (document.getElementById('massive-upload') as HTMLInputElement)?.click(); }}>
+                          <span className="material-symbols-outlined text-xl text-green-500">upload_file</span>
+                          <span>Cargar Masiva</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); setIsScheduleModalOpen(true); }}>
+                          <span className="material-symbols-outlined text-xl">calendar_add_on</span>
+                          <span>Programar Búsqueda</span>
+                        </button>
+
+                        <div className="h-px bg-slate-100 my-2 mx-4" />
+
+                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide" onClick={() => { setShowNotifDropdown(!showNotifDropdown); }}>
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-xl">notifications</span>
+                            <span>Alertas Sistema</span>
+                          </div>
+                          {notifications.length > 0 && <span className="size-5 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full shadow-lg shadow-red-200">{notifications.length}</span>}
+                        </button>
+
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-red-500 hover:bg-red-50 transition-colors font-bold uppercase text-[10px] tracking-[0.2em] mt-2 bg-red-50/30"
+                          onClick={() => { localStorage.removeItem("auth_token"); navigate("/login"); }}
+                        >
+                          <span className="material-symbols-outlined text-xl">logout</span>
+                          <span>Cerrar Sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8">
+            <section>
+              <div className="mb-6 text-center lg:text-left">
+                <h2 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Listas Negativas </h2>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-4 lg:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Nombres / Razón Social</label>
+                    <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: ALEJANDRO" value={qNombre} onChange={(e) => setQNombre(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Apellido Paterno</label>
+                    <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: VAZQUEZ" value={qApePat} onChange={(e) => setQApePat(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">Apellido Materno</label>
+                    <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: RAMOS" value={qApeMat} onChange={(e) => setQApeMat(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em]">DNI / RUC</label>
+                    <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="45672831" value={qDoc} onChange={(e) => setQDoc(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
+                  <button className="px-6 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>
+                    <span className="material-symbols-outlined text-sm">refresh</span>
+                    Limpiar
+                  </button>
+                  <button className="px-10 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20" onClick={() => consultar(1)}>
+                    <span className="material-symbols-outlined text-sm">search</span>
+                    Buscar
                   </button>
                 </div>
+                {error && <div className="text-red-600 mt-3 text-xs font-bold uppercase p-3 bg-red-50 rounded-lg">{error}</div>}
               </div>
-            </>
-          )}
-        </div>
-      </div>
+            </section>
 
-      {/* ── Page canvas ───────────────────────────────────── */}
-      <main style={{ maxWidth: 980, margin: '0 auto', padding: '48px 24px 80px' }}>
-
-        {/* Search form — white utility card */}
-        <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', padding: 24, marginBottom: 32 }}>
-          <h2 style={{ fontSize: 34, fontWeight: 600, letterSpacing: '-0.374px', color: '#1d1d1f', margin: '0 0 4px' }}>Consultar Entidad</h2>
-          <p style={{ fontSize: 17, fontWeight: 400, color: '#7a7a7a', letterSpacing: '-0.374px', margin: '0 0 24px', lineHeight: 1.47 }}>Busca personas naturales o jurídicas en las listas de sanciones y riesgo.</p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
-            {[
-              { label: 'Nombres / Razón Social', placeholder: 'Ej: ALEJANDRO', value: qNombre, setter: setQNombre },
-              { label: 'Apellido Paterno', placeholder: 'Ej: VAZQUEZ', value: qApePat, setter: setQApePat },
-              { label: 'Apellido Materno', placeholder: 'Ej: RAMOS', value: qApeMat, setter: setQApeMat },
-              { label: 'DNI / RUC', placeholder: '45672831', value: qDoc, setter: setQDoc },
-            ].map(field => (
-              <div key={field.label} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px' }}>{field.label}</label>
-                <input
-                  value={field.value}
-                  onChange={e => field.setter(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && consultar(1)}
-                  placeholder={field.placeholder}
-                  style={{ height: 44, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', padding: '0 20px', fontSize: 17, letterSpacing: '-0.374px', color: '#1d1d1f', background: '#f5f5f7', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s' }}
-                  onFocus={e => { e.target.style.borderColor = '#0066cc'; e.target.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.1)'; e.target.style.background = '#fff'; }}
-                  onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,0.08)'; e.target.style.boxShadow = 'none'; e.target.style.background = '#f5f5f7'; }}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid #f0f0f0', paddingTop: 20 }}>
-            <button
-              onClick={() => { setQNombre(''); setQApePat(''); setQApeMat(''); setQDoc(''); consultar(1); }}
-              style={{ height: 44, padding: '0 22px', borderRadius: 9999, border: '1px solid #0066cc', background: 'transparent', color: '#0066cc', fontSize: 17, letterSpacing: '-0.374px', fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}
-              onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-              onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
-              Limpiar
-            </button>
-            <button
-              onClick={() => consultar(1)}
-              style={{ height: 44, padding: '0 22px', borderRadius: 9999, border: 'none', background: '#0066cc', color: '#ffffff', fontSize: 17, letterSpacing: '-0.374px', fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#0071e3')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#0066cc')}
-              onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-              onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>search</span>
-              Buscar
-            </button>
-          </div>
-
-          {error && (
-            <div style={{ marginTop: 12, padding: '10px 16px', background: 'rgba(255,59,48,0.06)', border: '1px solid rgba(255,59,48,0.2)', borderRadius: 11, color: '#ff3b30', fontSize: 14, fontWeight: 600, letterSpacing: '-0.224px' }}>
-              {error}
-            </div>
-          )}
-        </div>
-
-        {/* Hidden file inputs */}
-        <input id="massive-upload" type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleMassiveSearch(e.target.files[0]); }} />
-
-        {/* Warning banner — no exact match */}
-        {showExactMatchWarning && (
-          <div style={{ background: 'rgba(255,59,48,0.06)', border: '1px solid rgba(255,59,48,0.18)', borderRadius: 11, padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span className="material-symbols-outlined" style={{ color: '#ff3b30', fontSize: 20 }}>info</span>
-              <div>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#ff3b30', letterSpacing: '-0.224px' }}>No se encontraron coincidencias exactas</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,59,48,0.7)', letterSpacing: '-0.12px' }}>Se muestran resultados similares a tu búsqueda</p>
-              </div>
-            </div>
-            <button onClick={() => window.print()}
-              style={{ background: '#ff3b30', color: '#fff', border: 'none', borderRadius: 9999, padding: '8px 18px', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', fontWeight: 400, letterSpacing: '-0.224px', flexShrink: 0 }}>
-              Descargar 0 resultados
-            </button>
-          </div>
-        )}
-
-        {/* Results section */}
-        <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', overflow: 'hidden' }}>
-          {/* Section header */}
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <h3 style={{ fontSize: 21, fontWeight: 600, letterSpacing: '0.231px', color: '#1d1d1f', margin: 0 }}>
-                {isSearching ? 'Resultados Exactos' : 'Todos los Registros'}
-              </h3>
-              <span style={{ background: 'rgba(0,102,204,0.08)', color: '#0066cc', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 9999, letterSpacing: '-0.12px' }}>
-                {isSearching ? results.length : total} registros
-              </span>
-            </div>
-          </div>
-
-          {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={results} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={false} />}
-        </div>
-
-        {/* Coincidences section */}
-        {isSearching && coincidences.length > 0 && (
-          <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', overflow: 'hidden', marginTop: 24, opacity: 0.75 }}>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e0e0e0' }} />
-              <h3 style={{ fontSize: 17, fontWeight: 600, color: '#7a7a7a', margin: 0, letterSpacing: '-0.374px' }}>Sugerencias por Similitud</h3>
-            </div>
-            {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={coincidences} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={false} />}
-          </div>
-        )}
-
-        {/* Footer */}
-        <footer style={{ marginTop: 64, paddingTop: 32, borderTop: '1px solid #f0f0f0', textAlign: 'center' }}>
-          <p style={{ fontSize: 12, color: '#7a7a7a', letterSpacing: '-0.12px', margin: 0 }}>
-            © 2026 INFORMAPERU — Área de TI. Todos los derechos reservados.
-          </p>
-        </footer>
-      </main>
-
-      {/* ── Detail Modal ──────────────────────────────────── */}
-      {isModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#fafafc', width: '100%', maxWidth: 720, borderRadius: 18, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh', border: '1px solid rgba(0,0,0,0.08)' }}>
-
-            {/* Modal header — Apple near-black */}
-            <div style={{ background: '#1d1d1f', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: 18 }}>folder_shared</span>
-                <h3 style={{ color: '#ffffff', fontSize: 17, fontWeight: 600, letterSpacing: '-0.374px', margin: 0 }}>Expediente de Incumplimiento</h3>
-              </div>
-              <button onClick={() => setIsModalOpen(false)}
-                style={{ width: 32, height: 32, borderRadius: 9999, border: 'none', background: 'rgba(255,255,255,0.1)', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
-              </button>
-            </div>
-
-            {/* Modal body */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-              {loadingDetail ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 240, gap: 12 }}>
-                  <div className="animate-spin" style={{ width: 36, height: 36, border: '3px solid #e0e0e0', borderTopColor: '#0066cc', borderRadius: '50%' }} />
-                  <p style={{ fontSize: 12, color: '#7a7a7a', letterSpacing: '-0.12px', margin: 0 }}>Construyendo expediente...</p>
+            <section className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-black uppercase tracking-tight">{isSearching ? "Resultados Exactos" : "TODOS LOS RESULTADOS"}</h3>
+                  <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-0.5 rounded-full">{isSearching ? results.length : total} REGISTROS</span>
                 </div>
-              ) : detailData && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-                  {/* Entity identity card */}
-                  <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <div style={{ width: 52, height: 52, background: '#1d1d1f', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: 28 }}>account_circle</span>
-                      </div>
-                      <div>
-                        <h4 style={{ fontSize: 17, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.374px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-                          {detailData.natural ? `${detailData.natural.nombre} ${detailData.natural.ape_pat} ${detailData.natural.ape_mat}` : detailData.juridica?.razon_social}
-                        </h4>
-                        <p style={{ fontSize: 12, color: '#7a7a7a', margin: 0, letterSpacing: '-0.12px' }}>
-                          DOC: <span style={{ color: '#0066cc', fontWeight: 600 }}>{detailData.entidad.documento}</span> · ID #{String(detailData.entidad.id).padStart(5, '0')}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{ background: '#f5f5f7', borderRadius: 11, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #e0e0e0' }}>
-                      <span className="material-symbols-outlined" style={{ color: '#34c759', fontSize: 16 }}>database</span>
-                      <div>
-                        <p style={{ fontSize: 10, color: '#7a7a7a', margin: 0, letterSpacing: '-0.08px' }}>Búsquedas restantes</p>
-                        <p style={{ fontSize: 17, fontWeight: 600, color: '#0066cc', margin: 0, letterSpacing: '-0.374px' }}>{tokens}</p>
-                      </div>
-                    </div>
+                {!isSearching && (
+                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">
+                    <button disabled={page <= 1} onClick={() => consultar(page - 1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-20 transition-colors">
+                      <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <span className="text-[10px] font-black uppercase px-2">pg. {page}</span>
+                    <button disabled={page * 10 >= total} onClick={() => consultar(page + 1)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-20 transition-colors">
+                      <span className="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
                   </div>
+                )}
+              </div>
 
-                  {/* Info grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 16px', background: '#f5f5f7', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#0066cc', flexShrink: 0 }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.12px' }}>Información Personal</span>
-                      </div>
-                      <div style={{ padding: 0 }}>
-                        <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
-                        {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />}
-                        <InfoRow label="Ubicación" value={`${detailData.entidad.distrito}, ${detailData.entidad.departamento}`} />
-                        <InfoRow label="Dirección" value={detailData.entidad.direccion} />
-                        <InfoRow label="Rubro" value={detailData.entidad.rubro} />
-                      </div>
-                    </div>
-                    <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid #e0e0e0', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 16px', background: '#f5f5f7', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#e0e0e0', flexShrink: 0 }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.12px' }}>Atributos Extendidos</span>
-                      </div>
-                      <div style={{ padding: 0 }}>
-                        {detailData.extension.natural ? (
-                          <>
-                            <InfoRow label="Fec. Nacimiento" value={detailData.extension.natural.fec_nac ? new Date(detailData.extension.natural.fec_nac).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : ''} />
-                            <InfoRow label="Nacionalidad" value={detailData.extension.natural.nacionalidad} />
-                            <InfoRow label="Instrucción" value={detailData.extension.natural.grado_instruccion} />
-                          </>
-                        ) : detailData.extension.juridica ? (
-                          <>
-                            <InfoRow label="Representante" value="PENDIENTE DE CARGA" />
-                            <InfoRow label="Capital Social" value="ALTO" />
-                          </>
-                        ) : (
-                          <div style={{ padding: 24, textAlign: 'center' }}>
-                            <p style={{ fontSize: 12, color: '#7a7a7a', margin: 0, fontStyle: 'italic' }}>Datos no disponibles</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto min-h-[200px]">
+                {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={results} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={showExactMatchWarning} />}
+              </div>
+
+               {isSearching && coincidences.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="size-2 bg-slate-400 rounded-full"></div>
+                    <h3 className="text-sm font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Sugerencias por Similitud</h3>
                   </div>
-
-                  {/* Risk lists */}
-                  {detailData.manchas.length > 0 ? (
-                    <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid rgba(255,59,48,0.25)', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 16px', background: '#ff3b30', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,59,48,0.4)' }}>
-                        <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: 16 }}>warning</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', letterSpacing: '-0.12px' }}>Listas de Riesgo</span>
-                      </div>
-                      <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
-                          <thead>
-                            <tr style={{ background: '#f5f5f7' }}>
-                              {['Lista', 'Descripción / Motivo', 'Enlace'].map(h => (
-                                <th key={h} style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', textAlign: 'left', borderBottom: '1px solid #e0e0e0' }}>{h}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailData.manchas.map((m: any) => (
-                              <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                <td style={{ padding: '12px 20px' }}>
-                                  <span style={{ background: 'rgba(255,59,48,0.08)', color: '#ff3b30', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 9999, border: '1px solid rgba(255,59,48,0.2)', letterSpacing: '-0.12px' }}>
-                                    {m.tipo_lista_nombre || 'S/N'}
-                                  </span>
-                                </td>
-                                <td style={{ padding: '12px 20px' }}>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1d1d1f', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '-0.374px' }}>{m.descripcion}</p>
-                                  <p style={{ fontSize: 11, color: '#7a7a7a', margin: 0, letterSpacing: '-0.12px' }}>
-                                    Registrado: {m.fecha_registro && !m.fecha_registro.startsWith('1970') && !m.fecha_registro.startsWith('1969') ? new Date(m.fecha_registro).toLocaleDateString('es-PE') : 'Pendiente'}
-                                  </p>
-                                </td>
-                                <td style={{ padding: '12px 20px', textAlign: 'right' }}>
-                                  {m.link ? (
-                                    <a href={m.link} target="_blank" rel="noreferrer" style={{ color: '#0066cc', fontSize: 13, fontWeight: 400, letterSpacing: '-0.374px', display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
-                                      Oficial <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
-                                    </a>
-                                  ) : (
-                                    <span style={{ fontSize: 11, color: '#e0e0e0' }}>Sin link</span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ background: '#ffffff', borderRadius: 18, border: '1px solid rgba(52,199,89,0.3)', overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 16px', background: '#34c759', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: 16 }}>verified_user</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', letterSpacing: '-0.12px' }}>Listas de Riesgo</span>
-                      </div>
-                      <div style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#34c759' }}>verified_user</span>
-                        <p style={{ fontSize: 17, fontWeight: 600, color: '#34c759', margin: 0, letterSpacing: '-0.374px' }}>Entidad Conforme</p>
-                        <p style={{ fontSize: 14, color: 'rgba(52,199,89,0.7)', margin: 0, letterSpacing: '-0.224px', maxWidth: 320 }}>No se registran antecedentes negativos en las bases consultadas.</p>
-                      </div>
-                    </div>
-                  )}
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-dotted border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto opacity-75 grayscale-[0.3]">
+                    {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={coincidences} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={false} />}
+                  </div>
                 </div>
               )}
-            </div>
+            </section>
 
-            {/* Modal footer */}
-            <div style={{ padding: '16px 24px', background: '#f5f5f7', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
-              <button onClick={() => setIsModalOpen(false)}
-                style={{ height: 44, padding: '0 22px', borderRadius: 9999, border: '1px solid #0066cc', background: 'transparent', color: '#0066cc', fontSize: 17, letterSpacing: '-0.374px', fontFamily: 'inherit', cursor: 'pointer' }}
-                onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              >
-                Cancelar
-              </button>
-              <button onClick={() => exportarPDF(detailData)}
-                style={{ height: 44, padding: '0 22px', borderRadius: 9999, border: 'none', background: '#0066cc', color: '#ffffff', fontSize: 17, letterSpacing: '-0.374px', fontFamily: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#0071e3')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#0066cc')}
-                onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>download</span>
-                Descargar Expediente
-              </button>
+            <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
+                @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+              </p>
+            </footer>
+          </div>
+        </main>
+      </div>
+
+      {/* DETALLES MODAL */}
+      {
+        isModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-100 dark:bg-slate-950 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 bg-[#32508E] dark:bg-slate-900 border-b border-[#243d70] dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-white text-xl">folder_shared</span>
+                  <h3 className="font-black text-white text-xs sm:text-sm tracking-wider uppercase">EXPEDIENTE DE INCUMPLIMIENTO</h3>
+                </div>
+                <button onClick={() => setIsModalOpen(false)} className="size-9 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                  <span className="material-symbols-outlined font-bold text-lg">close</span>
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                {loadingDetail ? (
+                  <div className="flex flex-col items-center justify-center h-64 gap-3">
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-primary"></div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Construyendo Informe...</p>
+                  </div>
+                ) : detailData && (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="size-14 bg-[#32508E] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#32508E]/20">
+                          <span className="material-symbols-outlined text-3xl">account_circle</span>
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-black uppercase text-slate-900 dark:text-white leading-tight">
+                            {detailData.natural ? `${detailData.natural.nombre} ${detailData.natural.ape_pat} ${detailData.natural.ape_mat}` : detailData.juridica?.razon_social}
+                          </h4>
+                          <p className="text-slate-700 dark:text-slate-300 font-extrabold tracking-wider text-[10px] uppercase mt-1">
+                            DOC: <span className="text-[#32508E] font-black">{detailData.entidad.documento}</span> • ID: #{String(detailData.entidad.id).padStart(5, '0')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3 self-start sm:self-center">
+                        <span className="material-symbols-outlined text-green-600 text-lg">database</span>
+                        <div>
+                          <p className="text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">Búsquedas Restantes</p>
+                          <p className="text-sm font-black text-[#32508E] dark:text-blue-400 leading-none">{tokens}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* INFORMACION PERSONAL */}
+                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                        <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-[#32508E]"></span>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">INFORMACIÓN PERSONAL</h5>
+                        </div>
+                        <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
+                          <InfoRow label="Tipo Entidad" value={detailData.entidad.tipo_entidad} />
+                          {detailData.natural && <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />}
+                          <InfoRow label="Ubicación" value={`${detailData.entidad.distrito}, ${detailData.entidad.departamento}`} />
+                          <InfoRow label="Dirección" value={detailData.entidad.direccion} />
+                          <InfoRow label="Rubro" value={detailData.entidad.rubro} />
+                        </div>
+                      </div>
+
+                      {/* ATRIBUTOS EXTENDIDOS */}
+                      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                        <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-slate-600"></span>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-widest">Atributos Extendidos</h5>
+                        </div>
+                        <div className="p-4 space-y-1.5 flex-1 bg-white dark:bg-slate-900">
+                          {detailData.extension.natural ? (
+                            <>
+                              <InfoRow label="Fec. Nacimiento" value={
+                                detailData.extension.natural.fec_nac
+                                  ? new Date(detailData.extension.natural.fec_nac).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')
+                                  : ''
+                              } />
+                              <InfoRow label="Nacionalidad" value={detailData.extension.natural.nacionalidad} />
+                              <InfoRow label="Instrucción" value={detailData.extension.natural.grado_instruccion} />
+                            </>
+                          ) : detailData.extension.juridica ? (
+                            <>
+                              <InfoRow label="Representante" value="PENDIENTE DE CARGA" />
+                              <InfoRow label="Capital Social" value="ALTO" />
+                            </>
+                          ) : (
+                            <div className="flex h-full items-center justify-center py-6">
+                              <p className="text-[10px] text-slate-400 italic font-bold uppercase">Datos no disponibles</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {detailData.manchas.length > 0 ? (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-950/40 shadow-sm overflow-hidden">
+                          <div className="px-4 py-2.5 bg-[#EB3237] border-b border-red-650 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-white text-base">warning</span>
+                            <h5 className="font-black text-white uppercase text-[10px] tracking-widest">LISTAS DE RIESGO</h5>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-800/50">
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Lista</th>
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Descripción / Motivo</th>
+                                  <th className="px-6 py-4 text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 text-right">Enlace</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                                {detailData.manchas.map((m: any) => (
+                                  <tr key={m.id} className="hover:bg-red-50/40 dark:hover:bg-red-950/10 transition-colors">
+                                    <td className="px-6 py-4">
+                                      <span className="px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[8px] font-black rounded uppercase border border-red-200 dark:border-red-900/55">
+                                        {m.tipo_lista_nombre || 'S/N'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <p className="text-[11px] text-slate-900 dark:text-slate-100 font-extrabold leading-tight uppercase">{m.descripcion}</p>
+                                      <p className="text-[8px] text-slate-500 dark:text-slate-400 uppercase mt-1.5 font-bold">
+                                        Registrado el: {
+                                          m.fecha_registro && !m.fecha_registro.startsWith('1970') && !m.fecha_registro.startsWith('1969')
+                                            ? new Date(m.fecha_registro).toLocaleDateString('es-PE')
+                                            : 'PENDIENTE'
+                                        }
+                                      </p>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                      {m.link ? (
+                                        <a href={m.link} target="_blank" className="inline-flex items-center gap-1 text-[9px] text-[#32508E] font-black hover:underline uppercase">
+                                          Oficial <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                                        </a>
+                                      ) : (
+                                        <span className="text-[8px] font-black text-slate-400 uppercase">Sin link</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-green-200 dark:border-green-950/40 shadow-sm overflow-hidden">
+                          <div className="px-4 py-2.5 bg-green-600 border-b border-green-700 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-white text-base">verified_user</span>
+                            <h5 className="font-black text-white uppercase text-[10px] tracking-widest">LISTAS DE RIESGO</h5>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-10 text-center gap-2">
+                            <span className="material-symbols-outlined text-4xl text-green-500 animate-bounce">verified_user</span>
+                            <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-widest">¡Entidad Conforme!</p>
+                            <p className="text-[10px] text-green-600/80 font-bold max-w-sm uppercase">No se registran antecedentes negativos en las bases consultadas hoy.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-slate-200/50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+                <button onClick={() => setIsModalOpen(false)} className="px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors order-2 sm:order-1">CANCELAR</button>
+                <button onClick={() => exportarPDF(detailData)} className="px-10 py-3 bg-[#32508E] hover:bg-[#243d70] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-200 dark:shadow-none flex items-center justify-center gap-3 order-1 sm:order-2 transition-all">
+                  <span className="material-symbols-outlined text-lg">download</span>
+                  DESCARGAR
+                </button>
+              </div>
             </div>
           </div>
+        )
+      }
+
+      <style>{`
+        .sidebar-item-active { background-color: rgba(15, 73, 189, 0.08); border-right: 4px solid #0f49bd; color: #0f49bd; box-shadow: inset -4px 0 12px -8px #0f49bd; }
+        .input-partial-border { border: 2px solid #edf2f7; border-bottom: 3px solid #0f49bd; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .input-partial-border:focus { outline: none; border-color: #0f49bd; background-color: white; transform: translateY(-1px); box-shadow: 0 12px 20px -10px rgba(15, 73, 189, 0.15); }
+      `}</style>
+      {isScheduleModalOpen && <ScheduleSearchModal onClose={() => setIsScheduleModalOpen(false)} onScheduled={() => { setIsScheduleModalOpen(false); fetchTokens(); }} />}
+    </div >
+  );
+}
+
+function ResultsTable({ data, onDetail, onPdf, isSearching, showWarning = false }: { data: any[], onDetail: (id: number) => void, onPdf: (e: any) => void, isSearching: boolean, showWarning?: boolean }) {
+  return (
+    <div className="space-y-6">
+      {showWarning && (
+        <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-2xl animate-in fade-in slide-in-from-top-2 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="size-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600">
+              <span className="material-symbols-outlined">info</span>
+            </div>
+            <div>
+              <h4 className="text-[11px] font-black text-red-700 dark:text-red-400 uppercase tracking-widest">No se encontraron resultados exactos</h4>
+              <p className="text-[10px] text-red-600/70 font-bold uppercase tracking-tighter">No hay coincidencias al 100% con los criterios buscados</p>
+            </div>
+          </div>
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2 bg-red-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-200 dark:shadow-none">
+            <span className="material-symbols-outlined text-xs">download</span>
+            Descargar 0 Resultados
+          </button>
         </div>
       )}
 
-      {isScheduleModalOpen && <ScheduleSearchModal onClose={() => setIsScheduleModalOpen(false)} onScheduled={() => { setIsScheduleModalOpen(false); fetchTokens(); }} />}
-    </div>
-  );
-}
-function ResultsTable({ data, onDetail, onPdf, isSearching, showWarning = false }: { data: any[], onDetail: (id: number) => void, onPdf: (e: any) => void, isSearching: boolean, showWarning?: boolean }) {
-  return (
-    <div>
       {data.length > 0 ? (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 580 }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr style={{ background: '#f5f5f7', borderBottom: '1px solid #e0e0e0' }}>
-                {isSearching && <th style={{ padding: '12px 24px', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', textAlign: 'left' }}>Coincidencia</th>}
-                <th style={{ padding: '12px 24px', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', textAlign: 'left' }}>Identidad / Razón Social</th>
-                <th style={{ padding: '12px 24px', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', textAlign: 'left' }}>Identificación</th>
-                <th style={{ padding: '12px 24px', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', textAlign: 'right' }}>Acciones</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                {isSearching && <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest w-40">Nivel de Coincidencia</th>}
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Identidad / Razón</th>
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Identificación</th>
+                <th className="px-6 py-5 text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest text-right">Consulta</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {data.map((r) => (
-                <tr key={`${r.tipo}-${r.id}-${r.documento}`} style={{ borderBottom: '1px solid #f0f0f0', transition: 'background 0.1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,102,204,0.03)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
+                <tr key={`${r.tipo}-${r.id}-${r.documento}`} className="hover:bg-blue-50/30 dark:hover:bg-primary/5 transition-all group">
                   {isSearching && (
-                    <td style={{ padding: '16px 24px' }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 600, letterSpacing: '-0.12px',
-                        background: r.match_count >= 4 ? 'rgba(0,102,204,0.08)' : r.match_count === 3 ? 'rgba(0,122,255,0.08)' : r.match_count === 2 ? 'rgba(255,149,0,0.08)' : 'rgba(255,59,48,0.08)',
-                        color: r.match_count >= 4 ? '#0066cc' : r.match_count === 3 ? '#007aff' : r.match_count === 2 ? '#ff9500' : '#ff3b30',
-                        border: `1px solid ${r.match_count >= 4 ? 'rgba(0,102,204,0.2)' : r.match_count === 3 ? 'rgba(0,122,255,0.2)' : r.match_count === 2 ? 'rgba(255,149,0,0.2)' : 'rgba(255,59,48,0.2)'}`
-                      }}>
-                        {r.match_count >= 4 ? 'Total' : r.match_count === 3 ? 'Alta' : r.match_count === 2 ? 'Media' : 'Baja'}
+                    <td className="px-6 py-6 border-l-4 border-transparent group-hover:border-primary transition-all">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${r.match_count >= 4 ? 'bg-primary/10 text-primary border border-primary/20' :
+                        r.match_count === 3 ? 'bg-blue-100 text-blue-600 border border-blue-200' :
+                          r.match_count === 2 ? 'bg-yellow-100 text-yellow-600 border border-yellow-200' :
+                            'bg-red-50 text-red-600 border border-red-200'
+                        }`}>
+                        {r.match_count >= 4 ? 'COINCIDENCIA TOTAL' :
+                          r.match_count === 3 ? 'COINCIDENCIA ALTA' :
+                            r.match_count === 2 ? 'COINCIDENCIA MEDIA' :
+                              'COINCIDENCIA BAJA'}
                       </span>
                     </td>
                   )}
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px', textTransform: 'uppercase', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {r.tipo === 'natural' ? `${r.nombre || ''} ${r.ape_pat || ''} ${r.ape_mat || ''}` : r.nombre}
+                  <td className="px-6 py-6">
+                    <div className="font-black text-slate-900 dark:text-white uppercase truncate max-w-[280px] text-xs transition-colors group-hover:text-primary">
+                      {r.tipo === "natural" ? `${r.nombre || ""} ${r.ape_pat || ""} ${r.ape_mat || ""}` : r.nombre}
                     </div>
-                    <div style={{ fontSize: 11, color: '#7a7a7a', letterSpacing: '-0.12px', marginTop: 2 }}>#{String(r.id).padStart(5, '0')} · {r.tipo === 'natural' ? 'Natural' : 'Jurídica'}</div>
+                    <div className="text-[9px] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">#{String(r.id).padStart(5, "0")} • {r.tipo === "natural" ? "Natural" : "Jurídica"}</div>
                   </td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px', fontVariantNumeric: 'tabular-nums' }}>{r.documento}</div>
-                    <div style={{ fontSize: 11, color: '#7a7a7a', letterSpacing: '-0.12px', marginTop: 2 }}>{r.tipo_documento_nombre || 'Documento'}</div>
+                  <td className="px-6 py-6">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-black text-slate-700 dark:text-slate-400 tabular-nums">{r.documento}</span>
+                      <span className="text-[9px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{r.tipo_documento_nombre || 'Documento'}</span>
+                    </div>
                   </td>
-                  <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
-                      <button onClick={() => onDetail(r.id)}
-                        style={{ height: 36, padding: '0 16px', borderRadius: 9999, border: 'none', background: '#0066cc', color: '#ffffff', fontSize: 14, fontWeight: 400, letterSpacing: '-0.224px', fontFamily: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, transition: 'background 0.15s' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#0071e3')}
-                        onMouseLeave={e => (e.currentTarget.style.background = '#0066cc')}
-                        onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.95)')}
-                        onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>visibility</span>
+                  <td className="px-6 py-6 text-right">
+                    <div className="flex justify-end items-center gap-3">
+                      <button onClick={() => onDetail(r.id)} className="flex items-center gap-2 px-4 py-2 bg-[#32508E] hover:bg-[#243d70] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-blue-200 dark:shadow-none">
+                        <span className="material-symbols-outlined text-sm">visibility</span>
                         Expediente
                       </button>
-                      <button onClick={() => onPdf(r)} title="Descargar Ficha"
-                        style={{ width: 36, height: 36, borderRadius: 9999, border: '1px solid rgba(0,0,0,0.08)', background: '#f5f5f7', color: '#7a7a7a', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#0066cc'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#0066cc'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.color = '#7a7a7a'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>download</span>
+                      <button onClick={() => onPdf(r)} title="Descargar Ficha" className="size-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-primary hover:text-white rounded-xl text-slate-400 transition-all">
+                        <span className="material-symbols-outlined text-lg">download</span>
                       </button>
                     </div>
                   </td>
@@ -915,30 +937,32 @@ function ResultsTable({ data, onDetail, onPdf, isSearching, showWarning = false 
           </table>
         </div>
       ) : (
-        <div style={{ padding: '64px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#e0e0e0' }}>folder_open</span>
-          <p style={{ fontSize: 14, color: '#cccccc', letterSpacing: '-0.224px', margin: 0 }}>Sin registros disponibles</p>
+        <div className="py-20 text-center flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined text-4xl text-slate-200">folder_open</span>
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin registros disponibles para mostrar</p>
         </div>
       )}
     </div>
   );
 }
+
 function LoadingSkeleton() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', gap: 12 }}>
-      <div className="animate-spin" style={{ width: 32, height: 32, border: '3px solid #e0e0e0', borderTopColor: '#0066cc', borderRadius: '50%' }} />
-      <p style={{ fontSize: 12, color: '#7a7a7a', letterSpacing: '-0.12px', margin: 0 }}>Procesando información...</p>
+    <div className="flex flex-col items-center justify-center p-20 gap-4">
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-100 border-b-primary"></div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Procesando información...</p>
     </div>
   );
 }
+
 function InfoRow({ label, value }: { label: string, value: string }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid #f0f0f0' }}>
-      <div style={{ padding: '10px 16px', background: '#f5f5f7', borderRight: '1px solid #f0f0f0', fontSize: 11, fontWeight: 600, color: '#7a7a7a', letterSpacing: '-0.12px', display: 'flex', alignItems: 'center' }}>
+    <div className="grid grid-cols-2 text-xs border-b border-slate-200 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+      <div className="px-4 py-2 border-r border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest text-[9px] flex items-center">
         {label}
       </div>
-      <div style={{ padding: '10px 16px', fontSize: 13, fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.374px', display: 'flex', alignItems: 'center', textTransform: 'uppercase' }}>
-        {value || '—'}
+      <div className="px-4 py-2 font-black text-slate-900 dark:text-white uppercase text-xs flex items-center">
+        {value || "---"}
       </div>
     </div>
   );
