@@ -633,6 +633,12 @@ app.get("/entity/:id/detail-access", requireAuth, async (req, res) => {
     const uid = Number((req as any).uid);
     const id = Number(req.params.id);
 
+    // Verificar si la entidad existe
+    const entCheck = await pool.query("SELECT id FROM entidades WHERE id = $1 LIMIT 1", [id]);
+    if (entCheck.rows.length === 0) {
+      return res.status(404).json({ error: "entidad no encontrada" });
+    }
+
     // Consumir token
     const left = await consumeOneToken(uid);
     if (left < 0) return res.status(402).json({ error: "sin tokens suficentes" });
@@ -795,9 +801,13 @@ app.post("/entity", requireAuth, async (req: any, res) => {
 
     // 2. Insert into specific table based on entity type
     if (b.tipo_entidad === 'natural') {
+      let sexo: string | null = String(b.sexo || b.genero || "").trim().toUpperCase();
+      if (sexo !== 'M' && sexo !== 'F') {
+        sexo = null;
+      }
       await client.query(
         "INSERT INTO personas_naturales(id_entidades, nombre, ape_pat, ape_mat, sexo) VALUES($1,$2,$3,$4,$5)",
-        [id, b.nombre || "", b.ape_pat || "", b.ape_mat || "", b.sexo || b.genero || null]
+        [id, b.nombre || "", b.ape_pat || "", b.ape_mat || "", sexo]
       );
       await client.query(
         "INSERT INTO extension_natural(id_entidades, estado_civil, ultimo_grado) VALUES($1,$2,$3)",
