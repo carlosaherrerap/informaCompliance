@@ -190,7 +190,7 @@ export default function RiskRegisterPage() {
     const color = getInherentColor(probVal, impLabel);
 
     if (probVal !== formData.probabilidad_nivel || impLabel !== formData.impacto_nivel || color !== formData.riesgo_inherente_color) {
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         probabilidad_nivel: probVal,
         impacto_nivel: impLabel,

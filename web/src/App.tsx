@@ -10,6 +10,8 @@ import RiskMatrixPage from "./pages/RiskMatrixPage";
 import RiskRegisterPage from "./pages/RiskRegisterPage";
 import CompletarPerfilPage from "./pages/CompletarPerfilPage";
 import ScoringRiesgoPage from "./pages/ScoringRiesgoPage";
+import ScoringNaturalPage from "./pages/ScoringNaturalPage";
+import ScoringCompanyPage from "./pages/ScoringCompanyPage";
 import CanalDenunciasPage from "./pages/CanalDenunciasPage";
 import ReporteOperacionesPage from "./pages/ReporteOperacionesPage";
 import { LoadPage } from "./pages/LoadPage";
@@ -37,13 +39,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const logged = isTokenValid();
-
   return (
     <Routes>
-      <Route path="/" element={logged ? <Navigate to="/home" replace /> : <LoginPage />} />
+      <Route path="/" element={isTokenValid() ? <Navigate to="/home" replace /> : <LoginPage />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
-      <Route path="/registro" element={logged ? <Navigate to="/home" replace /> : <RegisterPage />} />
+      <Route path="/registro" element={isTokenValid() ? <Navigate to="/home" replace /> : <RegisterPage />} />
       <Route path="/home" element={<RequireAuth><HomePage /></RequireAuth>} />
       <Route path="/perfil" element={<RequireAuth><ProfilePage /></RequireAuth>} />
       <Route path="/busqueda" element={<RequireAuth><SearchPage /></RequireAuth>} />
@@ -52,6 +52,8 @@ export default function App() {
       <Route path="/registro-riesgo" element={<RequireAuth><RiskRegisterPage /></RequireAuth>} />
       <Route path="/registro-riesgo/:id" element={<RequireAuth><RiskRegisterPage /></RequireAuth>} />
       <Route path="/scoring" element={<RequireAuth><ScoringRiesgoPage /></RequireAuth>} />
+      <Route path="/scoring/generate/natural" element={<RequireAuth><ScoringNaturalPage /></RequireAuth>} />
+      <Route path="/scoring/generate/company" element={<RequireAuth><ScoringCompanyPage /></RequireAuth>} />
       <Route path="/denuncias" element={<CanalDenunciasPage />} />
       <Route path="/reporte-operaciones" element={<RequireAuth><ReporteOperacionesPage /></RequireAuth>} />
       <Route path="/completar-perfil" element={<RequireAuth><CompletarPerfilPage /></RequireAuth>} />

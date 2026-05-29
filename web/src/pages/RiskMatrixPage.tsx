@@ -121,12 +121,12 @@ export default function RiskMatrixPage() {
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#111827] flex flex-col shrink-0 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isCollapsed ? 'w-20' : 'w-72'}`}>
         <div className={`h-20 flex items-center px-6 bg-white border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
           {!isCollapsed && (
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/home" className="flex items-center gap-3">
               <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-8 w-auto object-contain" />
             </Link>
           )}
           {isCollapsed && (
-            <Link to="/" className="flex items-center justify-center">
+            <Link to="/home" className="flex items-center justify-center">
               <img src="/logo.png" alt="IP" className="h-10 w-10 object-contain" />
             </Link>
           )}
@@ -152,8 +152,8 @@ export default function RiskMatrixPage() {
             <div className="space-y-2">
               {/* Inicio Button - Reubicado */}
               <button
-                onClick={() => navigate('/')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+                onClick={() => navigate('/home')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/home' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
                 style={{backgroundColor: 'transparent'}}
               >
                 <span className="material-symbols-outlined text-xl">home</span>

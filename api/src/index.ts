@@ -76,6 +76,11 @@ async function initDb() {
         console.log("Seed data initialized successfully.");
       }
     }
+    // Ensure scoring_riesgo table has tipo and payload columns
+    await pool.query(`
+      ALTER TABLE scoring_riesgo ADD COLUMN IF NOT EXISTS tipo VARCHAR(50);
+      ALTER TABLE scoring_riesgo ADD COLUMN IF NOT EXISTS payload JSONB;
+    `);
   } catch (err) {
     console.error("Error initializing database:", err);
   }
@@ -716,21 +721,30 @@ app.post("/schedule", async (req, res) => {
 
 async function resolveTipoDocumento(name: string): Promise<number | null> {
   if (!name) return null;
-  if (/^\d+$/.test(name)) return parseInt(name);
+  if (/^\d+$/.test(name)) {
+    const val = parseInt(name);
+    return val === 0 ? null : val;
+  }
   const r = await pool.query("SELECT id FROM tipo_documento WHERE nombre ILIKE $1 LIMIT 1", [name.trim()]);
   return r.rows[0]?.id || null;
 }
 
 async function resolveTipoLista(name: string): Promise<number | null> {
   if (!name) return null;
-  if (/^\d+$/.test(name)) return parseInt(name);
+  if (/^\d+$/.test(name)) {
+    const val = parseInt(name);
+    return val === 0 ? null : val;
+  }
   const r = await pool.query("SELECT id FROM tipo_lista WHERE nombre ILIKE $1 LIMIT 1", [name.trim()]);
   return r.rows[0]?.id || null;
 }
 
 async function resolvePais(name: string): Promise<number | null> {
   if (!name) return null;
-  if (/^\d+$/.test(name)) return parseInt(name);
+  if (/^\d+$/.test(name)) {
+    const val = parseInt(name);
+    return val === 0 ? null : val;
+  }
   const r = await pool.query("SELECT id FROM pais WHERE nombre ILIKE $1 LIMIT 1", [name.trim()]);
   return r.rows[0]?.id || null;
 }
@@ -1110,13 +1124,63 @@ app.get("/scoring", requireAuth, async (req: any, res) => {
 
 app.post("/scoring", requireAuth, async (req: any, res) => {
   try {
-    const { id_entidad, puntaje, sustento, categoria } = req.body;
+    let { id_entidad, puntaje, sustento, categoria, tipo, payload } = req.body;
+    
+    if (!id_entidad) {
+      let doc = "";
+      let name = "";
+      let tipo_entidad = "NATURAL";
+      
+      if (tipo === "juridica" || tipo === "company") {
+        doc = String(payload?.ruc || payload?.documento || "").trim();
+        name = String(payload?.razonSocial || payload?.nombre || "").trim();
+        tipo_entidad = "JURIDICA";
+      } else {
+        doc = String(payload?.identification || payload?.documento || "").trim();
+        name = String(payload?.fullname || payload?.nombre || "").trim();
+        tipo_entidad = "NATURAL";
+      }
+      
+      if (!doc) doc = "SC-" + Math.floor(Math.random() * 1000000);
+      if (!name) name = "CLIENTE SIN NOMBRE";
+      
+      // Check if entity already exists
+      const existingEnt = await pool.query(
+        "SELECT id FROM entidades WHERE documento = $1 LIMIT 1",
+        [doc]
+      );
+      
+      if (existingEnt.rows.length > 0) {
+        id_entidad = existingEnt.rows[0].id;
+      } else {
+        // Insert new entity
+        const entRes = await pool.query(
+          "INSERT INTO entidades (documento, tipo_entidad) VALUES ($1, $2) RETURNING id",
+          [doc, tipo_entidad]
+        );
+        id_entidad = entRes.rows[0].id;
+        
+        if (tipo_entidad === "JURIDICA") {
+          await pool.query(
+            "INSERT INTO personas_juridicas (id_entidades, razon_social) VALUES ($1, $2)",
+            [id_entidad, name]
+          );
+        } else {
+          await pool.query(
+            "INSERT INTO personas_naturales (id_entidades, nombre, ape_pat, ape_mat) VALUES ($1, $2, '', '')",
+            [id_entidad, name]
+          );
+        }
+      }
+    }
+    
     const r = await pool.query(
-      "INSERT INTO scoring_riesgo (id_usuario, id_entidad, puntaje, sustento, categoria) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [req.uid, id_entidad, puntaje, sustento, categoria]
+      "INSERT INTO scoring_riesgo (id_usuario, id_entidad, puntaje, sustento, categoria, tipo, payload) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [req.uid, id_entidad, puntaje, sustento, categoria, tipo, JSON.stringify(payload)]
     );
     res.json(r.rows[0]);
   } catch (err) {
+    console.error("Error al guardar scoring:", err);
     res.status(500).json({ error: "Error al guardar scoring" });
   }
 });
