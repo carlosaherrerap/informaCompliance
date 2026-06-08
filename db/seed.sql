@@ -121,11 +121,11 @@ WHERE id_usuarios IN (SELECT id FROM usuarios WHERE usuario='usuario1');
 
 -- BASE PROGRAMADA
 INSERT INTO base_programada (id, id_usuario, nombres, documento, cargo, rubros, tipo_entidad, fecha_consulta, entidad_hook, notify)
-SELECT 5001, u.id, 'Construcciones del Norte E.I.R.L.', '20448192033', 'Analista', 'Construcción', 'juridica', CURRENT_DATE, 'Actos Ilícitos', TRUE
+SELECT 5001, u.id, 'Construcciones del Norte E.I.R.L.', '20448192033', 'Analista', 'Construcción', 'juridica', CURRENT_DATE, '2001', TRUE
 FROM usuarios u WHERE u.usuario='admin'
 AND NOT EXISTS (SELECT 1 FROM base_programada bp WHERE bp.id=5001);
 INSERT INTO base_programada (id, id_usuario, nombres, documento, cargo, rubros, tipo_entidad, fecha_consulta, entidad_hook, notify)
-SELECT 5002, u.id, 'Alejandro Vazquez Ramos', '45672831', 'Analista', 'Servicios', 'natural', CURRENT_DATE, 'PEP', TRUE
+SELECT 5002, u.id, 'Alejandro Vazquez Ramos', '45672831', 'Analista', 'Servicios', 'natural', CURRENT_DATE, '1001', TRUE
 FROM usuarios u WHERE u.usuario='usuario1'
 AND NOT EXISTS (SELECT 1 FROM base_programada bp WHERE bp.id=5002);
 

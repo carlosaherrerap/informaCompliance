@@ -257,7 +257,7 @@ export default function OperationsRegistryPage() {
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: true, href: "/denuncias" },
     { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
   ];
@@ -388,7 +388,7 @@ export default function OperationsRegistryPage() {
         </div>
 
         <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
-        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden lg:flex w-full items-center justify-center py-2 rounded-xl text-slate-500 hover:bg-white/5 hover:text-white transition-all mb-4"
@@ -404,7 +404,7 @@ export default function OperationsRegistryPage() {
               <button
                 onClick={() => navigate('/home')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/home' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
-                style={{backgroundColor: 'transparent'}}
+                style={{ backgroundColor: 'transparent' }}
               >
                 <span className="material-symbols-outlined text-xl">home</span>
                 {!isCollapsed && <span>Inicio</span>}
@@ -416,7 +416,7 @@ export default function OperationsRegistryPage() {
                   disabled={!m.enabled}
                   onClick={() => navigate(m.href)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
-                  style={{backgroundColor: 'transparent'}}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <span className="material-symbols-outlined text-xl">{m.icon}</span>
                   {!isCollapsed && (
@@ -445,7 +445,7 @@ export default function OperationsRegistryPage() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
           <div className="flex items-center gap-4">
             <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
               <span className="material-symbols-outlined">menu</span>
@@ -667,18 +667,18 @@ export default function OperationsRegistryPage() {
                       </tr>
                     ) : (
                       formData.beneficiarios.map((b, idx) => (
-                        <tr key={idx} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                          <td className="px-4 py-2 border-r border-slate-100 text-center font-medium">{b.numero_beneficiario}</td>
-                          <td className="px-4 py-2 border-r border-slate-100">
+                        <tr key={idx} className="border-b border-slate-200 last:border-0 hover:bg-slate-50">
+                          <td className="px-4 py-2 border-r border-slate-200 text-center font-medium">{b.numero_beneficiario}</td>
+                          <td className="px-4 py-2 border-r border-slate-200">
                             <input className="w-full bg-transparent outline-none focus:ring-1 ring-indigo-500 rounded px-1" value={b.apellidos_razon_social} onChange={e => updateBeneficiary(idx, 'apellidos_razon_social', e.target.value)} />
                           </td>
-                          <td className="px-4 py-2 border-r border-slate-100">
+                          <td className="px-4 py-2 border-r border-slate-200">
                             <select className="w-full bg-transparent outline-none focus:ring-1 ring-indigo-500 rounded" value={b.id_tipo_doc} onChange={e => updateBeneficiary(idx, 'id_tipo_doc', e.target.value)}>
                               <option value="">-- Seleccione --</option>
                               {lookups.tipo_doc.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
                             </select>
                           </td>
-                          <td className="px-4 py-2 border-r border-slate-100">
+                          <td className="px-4 py-2 border-r border-slate-200">
                             <input className="w-full bg-transparent outline-none focus:ring-1 ring-indigo-500 rounded px-1" value={b.num_doc} onChange={e => updateBeneficiary(idx, 'num_doc', e.target.value)} />
                           </td>
                           <td className="px-4 py-2">
@@ -734,13 +734,13 @@ export default function OperationsRegistryPage() {
                       </tr>
                     ) : (
                       registros.map((r, idx) => (
-                        <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-4 border-r border-slate-100 text-center text-slate-500">#{r.id}</td>
-                          <td className="px-4 py-4 border-r border-slate-100 font-black text-[#32508E]">{r.numero_registro}</td>
-                          <td className="px-4 py-4 border-r border-slate-100 uppercase">{r.nombres_fisica} {r.apellidos_fisica}</td>
-                          <td className="px-4 py-4 border-r border-slate-100 uppercase">{r.nombres_nombre} {r.apellidos_nombre}</td>
-                          <td className="px-4 py-4 border-r border-slate-100 uppercase text-center">{r.oficina}</td>
-                          <td className="px-4 py-4 border-r border-slate-100 text-center">{r.fecha_registro.split('T')[0]}</td>
+                        <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-4 border-r border-slate-200 text-center text-slate-500">#{r.id}</td>
+                          <td className="px-4 py-4 border-r border-slate-200 font-black text-[#32508E]">{r.numero_registro}</td>
+                          <td className="px-4 py-4 border-r border-slate-200 uppercase">{r.nombres_fisica} {r.apellidos_fisica}</td>
+                          <td className="px-4 py-4 border-r border-slate-200 uppercase">{r.nombres_nombre} {r.apellidos_nombre}</td>
+                          <td className="px-4 py-4 border-r border-slate-200 uppercase text-center">{r.oficina}</td>
+                          <td className="px-4 py-4 border-r border-slate-200 text-center">{r.fecha_registro.split('T')[0]}</td>
                           <td className="px-4 py-4 text-center">
                             <button className="text-[#32508E] hover:bg-[#32508E]/10 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all">Ver detalle</button>
                           </td>
@@ -759,9 +759,9 @@ export default function OperationsRegistryPage() {
           )}
         </div>
 
-        <footer className="py-4 bg-white border-t border-slate-100 flex items-center justify-center shrink-0">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center px-4">
-            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+        <footer className="py-4 bg-white border-t border-slate-200 flex items-center justify-center shrink-0">
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest text-center px-4">
+            @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
           </p>
         </footer>
       </main>

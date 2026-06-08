@@ -1,160 +1,384 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
+/* ─── Field helper ─────────────────────────────── */
+function Field({
+  label,
+  value,
+  editing,
+  name,
+  onChange,
+  disabled = false,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  editing: boolean;
+  name: string;
+  onChange: (n: string, v: string) => void;
+  disabled?: boolean;
+  type?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</label>
+      {editing && !disabled ? (
+        <input
+          type={type}
+          value={value}
+          onChange={e => onChange(name, e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all"
+        />
+      ) : (
+        <p className={`text-sm px-4 py-3 rounded-xl font-bold ${disabled ? "text-slate-400 bg-slate-100" : "text-slate-800 bg-slate-50 border border-slate-200"}`}>
+          {value || <span className="text-slate-300 italic font-medium">—</span>}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ─── Main Page ─────────────────────────────────── */
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  async function fetchProfile() {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+  // form state
+  const [form, setForm] = useState({ nombres: "", ape_pat: "", ape_mat: "", cargo: "", empresa: "" });
+  const [draft, setDraft] = useState({ ...form });
+
+  const modules = [
+    { name: "Listas Negativas",      icon: "search",                enabled: true,  href: "/busqueda" },
+    { name: "Matriz de Riesgos",     icon: "grid_on",               enabled: true,  href: "/matriz-riesgos" },
+    { name: "Scoring de Riesgo",     icon: "trending_up",           enabled: true,  href: "/scoring" },
+    { name: "Registro de Operaciones", icon: "assignment",          enabled: true,  href: "/registro-operaciones" },
+    { name: "Canal de Denuncias",    icon: "campaign",              enabled: true,  href: "/denuncias" },
+    { name: "Mis Cursos",            icon: "school",                enabled: false, href: "/mis-cursos" },
+    { name: "Mi Perfil",             icon: "manage_accounts",       enabled: true,  href: "/perfil" },
+  ];
+
+  function showToast(type: "ok" | "err", msg: string) {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3500);
+  }
+
+  function handleChange(name: string, value: string) {
+    setDraft(prev => ({ ...prev, [name]: value }));
+  }
+
+  function startEdit() {
+    setDraft({ ...form });
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setDraft({ ...form });
+    setEditing(false);
+  }
+
+  async function saveEdit() {
+    if (!draft.nombres.trim()) { showToast("err", "El campo Nombres es obligatorio."); return; }
+    setSaving(true);
+    const token = localStorage.getItem("auth_token") || "";
     try {
-      const r = await fetch(`${apiUrl}/profile`, { //<---TOMA LA RUTA PERFIL
-        headers: { Authorization: `Bearer ${token}` }
+      const r = await fetch(`${API}/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(draft),
       });
       if (r.ok) {
-        const data = await r.json();
-        setUser(data);
-      } else if (r.status === 401) {
-        navigate("/login");
+        const updated = await r.json();
+        const next = {
+          nombres: updated.nombres || "",
+          ape_pat: updated.ape_pat || "",
+          ape_mat: updated.ape_mat || "",
+          cargo: updated.cargo || "",
+          empresa: updated.empresa || "",
+        };
+        setUser(updated);
+        setForm(next);
+        setDraft(next);
+        setEditing(false);
+        showToast("ok", "Perfil actualizado correctamente.");
+      } else {
+        const err = await r.json().catch(() => ({ error: "Error desconocido" }));
+        showToast("err", err.error || "Error al guardar.");
       }
-    } catch { }
-    finally {
-      setLoading(false);
-    }
+    } catch { showToast("err", "Sin conexión al servidor."); }
+    finally { setSaving(false); }
   }
 
   useEffect(() => {
-    fetchProfile();
+    const token = localStorage.getItem("auth_token");
+    if (!token) { navigate("/login"); return; }
+    fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => {
+        if (r.status === 401) { navigate("/login"); return null; }
+        return r.ok ? r.json() : null;
+      })
+      .then(data => {
+        if (data) {
+          setUser(data);
+          const next = {
+            nombres: data.nombres || "",
+            ape_pat: data.ape_pat || "",
+            ape_mat: data.ape_mat || "",
+            cargo: data.cargo || "",
+            empresa: data.empresa || "",
+          };
+          setForm(next);
+          setDraft(next);
+        }
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-b-primary"></div>
+    <div className="min-h-screen flex items-center justify-center bg-[#eef2f6]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
+        <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Cargando perfil…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-[#111318] min-h-screen">
-      <div className="flex min-h-screen">
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-[#dbdfe6] dark:border-slate-800 flex flex-col sticky top-0 h-screen">
-          <div className="p-6 flex items-center gap-3">
-            <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 w-auto object-contain" />
+    <div className="flex h-screen overflow-hidden bg-[#eef2f6] font-display dark:bg-[#101622]">
+
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
+      {/* ── SIDEBAR — idéntico a SearchPage ── */}
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#111827] flex flex-col shrink-0 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isCollapsed ? 'w-20' : 'w-72'}`}>
+        <div className={`h-20 flex items-center px-6 bg-white border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+          {!isCollapsed && (
+            <Link to="/home" className="flex items-center gap-3">
+              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-8 w-auto object-contain" />
+            </Link>
+          )}
+          {isCollapsed && (
+            <Link to="/home" className="flex items-center justify-center">
+              <img src="/logo.png" alt="IP" className="h-10 w-10 object-contain" />
+            </Link>
+          )}
+          <button className="lg:hidden text-slate-400" onClick={() => setIsSidebarOpen(false)}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
+        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' } as React.CSSProperties}>
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex w-full items-center justify-center py-2 rounded-xl text-slate-500 hover:bg-white/5 hover:text-white transition-all mb-4"
+          >
+            <span className="material-symbols-outlined transition-transform duration-300" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }}>
+              menu_open
+            </span>
+          </button>
+
+          <div className="space-y-4">
+            {!isCollapsed && <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Sistemas</p>}
+            <div className="space-y-2">
+              {/* Inicio */}
+              <button
+                onClick={() => navigate('/home')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/home' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <span className="material-symbols-outlined text-xl">home</span>
+                {!isCollapsed && <span>Inicio</span>}
+              </button>
+
+              {modules.map((m) => (
+                <button
+                  key={m.name}
+                  disabled={!m.enabled}
+                  onClick={() => m.enabled && navigate(m.href)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <span className="material-symbols-outlined text-xl">{m.icon}</span>
+                  {!isCollapsed && (
+                    <span className="flex items-center gap-1.5">
+                      <span>{m.name}</span>
+                      {!m.enabled && (
+                        <span className="material-symbols-outlined text-[12px] text-slate-400">lock</span>
+                      )}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-          <nav className="flex-1 mt-4 px-3 space-y-1">
-            <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" to="/busqueda">
-              <span className="material-symbols-outlined">search</span>
-              <span>Listas Negativas</span>
-            </Link>
-            <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav" to="/perfil">
-              <span className="material-symbols-outlined">account_circle</span>
-              <span className="text-[10px] font-black uppercase tracking-widest">Perfil</span>
-            </Link>
-          </nav>
-          <div className="p-4 border-t border-[#dbdfe6] dark:border-slate-800">
-            <button className="flex items-center w-full gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-bold uppercase text-[10px] tracking-widest" onClick={() => { localStorage.removeItem("auth_token"); navigate("/login"); }}>
-              <span className="material-symbols-outlined">logout</span>
-              <span>Cerrar Sesión</span>
+
+          <div className="pt-4 mt-auto border-t border-white/5">
+            <button
+              className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors font-bold uppercase text-[10px] tracking-widest ${isCollapsed ? 'justify-center' : ''}`}
+              onClick={() => { localStorage.removeItem("auth_token"); window.location.href = '/login'; }}
+            >
+              <span className="material-symbols-outlined text-xl">logout</span>
+              {!isCollapsed && <span>CERRAR SESIÓN</span>}
             </button>
           </div>
-        </aside>
+        </nav>
+      </aside>
 
-        <main className="flex-1 flex flex-col p-8 max-w-6xl mx-auto w-full">
-          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 shrink-0 mb-8 -mx-8">
-            <div className="flex items-center gap-8">
-              <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
-              <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l border-slate-100 pl-8">
-                <span>INICIO</span>
-                <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-                <span className="text-primary font-bold">MI PERFIL</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button className="px-5 py-2.5 rounded-xl bg-white border border-[#dbdfe6] text-[10px] font-black uppercase tracking-widest text-[#111318] hover:bg-gray-50 transition-colors shadow-sm">Descartar</button>
-              <button className="px-5 py-2.5 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0d3ea1] transition-all shadow-xl shadow-primary/20">Guardar Cambios</button>
-            </div>
-          </header>
+      {/* ── MAIN ── */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-6 mb-8 border border-[#dbdfe6] dark:border-slate-800 accent-border flex flex-col md:flex-row gap-8 items-center">
-            <div className="relative">
-              <img className="size-32 rounded-3xl border-4 border-white dark:border-slate-800 shadow-xl object-cover" src={user?.photo || "https://lh3.googleusercontent.com/a/ACg8ocL_G5I_J_H5_v_v_v=s96-c"} alt="avatar" />
-              <div className="absolute -bottom-2 -right-2 size-8 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-900">
+        {/* Header */}
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 shrink-0">
+          <div className="flex items-center gap-4">
+            <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
+              <span className="material-symbols-outlined">menu</span>
+            </button>
+            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <button onClick={() => navigate('/home')} className="hover:text-primary transition-colors">Inicio</button>
+              <span className="material-symbols-outlined text-xs">chevron_right</span>
+              <span className="text-slate-700">Mi Perfil</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {editing ? (
+              <>
+                <button
+                  onClick={cancelEdit}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-sm">close</span>
+                  Cancelar
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 disabled:opacity-50"
+                >
+                  {saving ? (
+                    <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Guardando…</>
+                  ) : (
+                    <><span className="material-symbols-outlined text-sm">save</span> Guardar</>
+                  )}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={startEdit}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+              >
                 <span className="material-symbols-outlined text-sm">edit</span>
-              </div>
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{user?.nombres} {user?.ape_pat}</h3>
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-[9px] font-black text-primary uppercase tracking-tighter shadow-sm border border-primary/10">ID: #{String(user?.id || 0).padStart(5, '0')}</span>
-              </div>
-              <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] opacity-75">{user?.cargo || "Analista de Riesgos"}</p>
-            </div>
+                Editar perfil
+              </button>
+            )}
           </div>
+        </header>
 
+        {/* Content scroll area */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-8">
+
+          {/* Toast */}
+          {toast && (
+            <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border
+              ${toast.type === "ok"
+                ? "bg-green-50 border-green-200 text-green-800"
+                : "bg-red-50 border-red-200 text-red-800"}`}
+            >
+              <span className={`material-symbols-outlined text-lg ${toast.type === "ok" ? "text-green-600" : "text-red-500"}`}>
+                {toast.type === "ok" ? "check_circle" : "error"}
+              </span>
+              {toast.msg}
+            </div>
+          )}
+
+          {/* Avatar card */}
+          <section>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              <div className="size-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary text-4xl">account_circle</span>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">
+                    {user?.nombres} {user?.ape_pat} {user?.ape_mat}
+                  </h2>
+                  {editing && (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-black text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-widest">
+                      <span className="material-symbols-outlined text-[12px]">edit</span> Modo edición
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user?.cargo || "Sin cargo asignado"}</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-1">{user?.correo}</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Form grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-[#dbdfe6] dark:border-slate-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#dbdfe6] dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">person</span>
-                  <h4 className="font-black text-[11px] uppercase tracking-widest text-[#111318] dark:text-white">Datos personales</h4>
-                </div>
-                <div className="p-6 space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombres</label>
-                      <input className="w-full rounded-xl border-[#dbdfe6] dark:bg-slate-800/50 dark:border-slate-700 h-11 text-sm font-bold uppercase" type="text" defaultValue={user?.nombres} />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Apellidos</label>
-                      <input className="w-full rounded-xl border-[#dbdfe6] dark:bg-slate-800/50 dark:border-slate-700 h-11 text-sm font-bold uppercase" type="text" defaultValue={`${user?.ape_pat || ""} ${user?.ape_mat || ""}`} />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Correo Electrónico</label>
-                    <input className="w-full rounded-xl border-[#dbdfe6] dark:bg-slate-800/50 dark:border-slate-700 h-11 text-sm font-bold" type="email" defaultValue={user?.correo} disabled />
-                    <p className="text-[9px] text-slate-400 font-medium">El correo no puede ser modificado si usas Google Auth.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-[#dbdfe6] dark:border-slate-800 overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#dbdfe6] dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">business_center</span>
-                  <h4 className="font-black text-[11px] uppercase tracking-widest text-[#111318] dark:text-white">Información Laboral</h4>
-                </div>
-                <div className="p-6 space-y-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresa</label>
-                    <input className="w-full rounded-xl border-[#dbdfe6] dark:bg-slate-800/50 dark:border-slate-700 h-11 text-sm font-bold uppercase" type="text" defaultValue={user?.empresa} />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cargo / Función</label>
-                    <input className="w-full rounded-xl border-[#dbdfe6] dark:bg-slate-800/50 dark:border-slate-700 h-11 text-sm font-bold uppercase" type="text" defaultValue={user?.cargo} />
-                  </div>
-                </div>
+            {/* Datos personales */}
+            <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-lg">person</span>
+                <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Datos Personales</h3>
               </div>
-            </div>
+              <div className="p-6 space-y-4">
+                <Field label="Nombres *" value={draft.nombres} editing={editing} name="nombres" onChange={handleChange} />
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Apellido Paterno" value={draft.ape_pat} editing={editing} name="ape_pat" onChange={handleChange} />
+                  <Field label="Apellido Materno" value={draft.ape_mat} editing={editing} name="ape_mat" onChange={handleChange} />
+                </div>
+                <Field label="Correo Electrónico" value={user?.correo || ""} editing={false} name="correo" onChange={() => {}} disabled />
+                <p className="text-[9px] text-slate-400 font-bold flex items-center gap-1 -mt-1">
+                  <span className="material-symbols-outlined text-[12px]">info</span>
+                  El correo no puede ser modificado.
+                </p>
+              </div>
+            </section>
+
+            {/* Información laboral */}
+            <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-lg">business_center</span>
+                <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Información Laboral</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                <Field label="Empresa / Institución" value={draft.empresa} editing={editing} name="empresa" onChange={handleChange} />
+                <Field label="Cargo / Función" value={draft.cargo} editing={editing} name="cargo" onChange={handleChange} />
+                <Field label="Usuario del Sistema" value={user?.usuario || ""} editing={false} name="usuario" onChange={() => {}} disabled />
+                <p className="text-[9px] text-slate-400 font-bold flex items-center gap-1 -mt-1">
+                  <span className="material-symbols-outlined text-[12px]">info</span>
+                  El nombre de usuario no puede ser modificado.
+                </p>
+              </div>
+            </section>
           </div>
 
-          <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12 overflow-hidden">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
-              @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+          {/* Footer — idéntico a SearchPage */}
+          <footer className="py-10 bg-white border-t border-slate-200 flex items-center justify-center mt-4">
+            <p className="text-[10px] font-bold text-slate-500 tracking-widest text-center max-w-2xl px-4">
+              @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
             </p>
           </footer>
-        </main>
-      </div>
-      <style>{`
-        .active-nav { background-color: rgba(15, 73, 189, 0.08); color: #0f49bd; border-right: 4px solid #0f49bd; }
-        .accent-border { border-top: 4px solid #0f49bd; }
-      `}</style>
-    </div >
+
+        </div>
+      </main>
+    </div>
   );
 }

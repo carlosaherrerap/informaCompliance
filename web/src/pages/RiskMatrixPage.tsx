@@ -67,7 +67,7 @@ export default function RiskMatrixPage() {
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: true, href: "/denuncias" },
     { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
   ];
@@ -136,7 +136,7 @@ export default function RiskMatrixPage() {
         </div>
 
         <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
-        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+        <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
           {/* Toggle Button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -154,7 +154,7 @@ export default function RiskMatrixPage() {
               <button
                 onClick={() => navigate('/home')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/home' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
-                style={{backgroundColor: 'transparent'}}
+                style={{ backgroundColor: 'transparent' }}
               >
                 <span className="material-symbols-outlined text-xl">home</span>
                 {!isCollapsed && <span>Inicio</span>}
@@ -166,7 +166,7 @@ export default function RiskMatrixPage() {
                   disabled={!m.enabled}
                   onClick={() => navigate(m.href)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
-                  style={{backgroundColor: 'transparent'}}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <span className="material-symbols-outlined text-xl">{m.icon}</span>
                   {!isCollapsed && (
@@ -195,7 +195,7 @@ export default function RiskMatrixPage() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
           <div className="flex items-center gap-4">
             <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
               <span className="material-symbols-outlined">menu</span>
@@ -375,9 +375,9 @@ export default function RiskMatrixPage() {
           </Box>
         </div>
 
-        <footer className="py-4 bg-white border-t border-slate-100 flex items-center justify-center shrink-0">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center px-4">
-            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+        <footer className="py-4 bg-white border-t border-slate-200 flex items-center justify-center shrink-0">
+          <p className="text-[10px] font-bold text-slate-400 tracking-widest text-center px-4">
+            @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
           </p>
         </footer>
       </main>

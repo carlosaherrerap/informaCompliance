@@ -11,7 +11,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggle, userRole }: any) {
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: true, href: "/denuncias" },
     { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === "admin", href: "/load" },
   ];
@@ -176,7 +176,7 @@ export default function ScoringRiesgoPage() {
       <div className="flex h-screen overflow-hidden relative">
         <Sidebar isOpen={sidebarOpen} isCollapsed={collapsed} onClose={() => setSidebarOpen(false)} onToggle={() => setCollapsed(!collapsed)} userRole={userRole} />
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+          <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
             <div className="flex items-center gap-4">
               <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setSidebarOpen(true)}>
                 <span className="material-symbols-outlined">menu</span>
@@ -226,7 +226,7 @@ export default function ScoringRiesgoPage() {
 
             {/* History Table Card */}
             <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="px-8 py-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em]">Scoring consultados recientemente</h3>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
@@ -286,9 +286,9 @@ export default function ScoringRiesgoPage() {
             </div>
           </div>
 
-          <footer className="py-4 bg-white border-t border-slate-100 flex items-center justify-center shrink-0">
-            <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest text-center px-4">
-              @COPYRIGHT · DESARROLLADO POR EL AREA DE TI - INFORMAPERU · 2026
+          <footer className="py-4 bg-white border-t border-slate-200 flex items-center justify-center shrink-0">
+            <p className="text-[9px] font-bold text-slate-300 tracking-widest text-center px-4">
+              @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
             </p>
           </footer>
         </main>
@@ -298,7 +298,7 @@ export default function ScoringRiesgoPage() {
       {selectedRecord && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={() => setSelectedRecord(null)}>
           <div className="bg-white rounded-3xl border border-slate-200 w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden scale-in duration-300" onClick={e => e.stopPropagation()}>
-            <header className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50">
+            <header className="px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50">
               <div>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-700">Detalle de Scoring #{String(selectedRecord.id).padStart(5, "0")}</h3>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Fecha: {new Date(selectedRecord.fecha_creacion).toLocaleString()}</p>
@@ -346,7 +346,7 @@ export default function ScoringRiesgoPage() {
                         currency: "Moneda ID", pjType: "Tipo PJ ID", companySize: "Tamaño Empresa ID"
                       };
                       return (
-                        <div key={k} className="flex justify-between border-b border-slate-100 pb-1.5">
+                        <div key={k} className="flex justify-between border-b border-slate-200 pb-1.5">
                           <span className="text-slate-400 font-medium">{labels[k] || k}</span>
                           <span className="text-slate-700 font-bold uppercase">{v}</span>
                         </div>
@@ -363,7 +363,7 @@ export default function ScoringRiesgoPage() {
                 </div>
               )}
             </div>
-            <footer className="px-6 py-4 border-t border-slate-100 flex justify-end shrink-0 bg-slate-50">
+            <footer className="px-6 py-4 border-t border-slate-200 flex justify-end shrink-0 bg-slate-50">
               <button className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow" onClick={() => setSelectedRecord(null)}>Cerrar</button>
             </footer>
           </div>

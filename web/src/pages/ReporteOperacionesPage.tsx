@@ -25,7 +25,7 @@ export default function ReporteOperacionesPage() {
   if (loading) return <div className="p-20 text-center font-black uppercase text-xs animate-pulse">Cargando Analítica...</div>;
 
   return (
-    <div className="font-display bg-slate-50 dark:bg-background-dark min-h-screen">
+    <div className="font-display bg-[#eef2f6] dark:bg-background-dark min-h-screen">
       <div className="flex h-screen overflow-hidden">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 flex items-center gap-3">
@@ -40,10 +40,10 @@ export default function ReporteOperacionesPage() {
         </aside>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 shrink-0 z-20">
+          <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 shrink-0 z-20">
             <div className="flex items-center gap-4 lg:gap-8">
               <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-10 lg:h-12 w-auto object-contain flex-shrink-0" />
-              <div className="flex items-center gap-2 lg:gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l border-slate-100 pl-4 lg:pl-8">
+              <div className="flex items-center gap-2 lg:gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l border-slate-200 pl-4 lg:pl-8">
                 <button className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600" onClick={() => setIsSidebarOpen(true)}>
                   <span className="material-symbols-outlined">menu</span>
                 </button>
@@ -92,7 +92,7 @@ export default function ReporteOperacionesPage() {
                 </h3>
                 <div className="space-y-4">
                   {stats?.byOffice?.map((off: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800">
                       <div>
                         <p className="text-xs font-black uppercase">{off.oficina}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase">{off.count} Operaciones</p>
@@ -139,9 +139,9 @@ export default function ReporteOperacionesPage() {
             </div>
           </div>
 
-          <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12 px-4 shrink-0">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
-              @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+          <footer className="py-10 bg-white border-t border-slate-200 flex items-center justify-center mt-12 px-4 shrink-0">
+            <p className="text-[10px] font-bold text-slate-500 tracking-widest text-center max-w-2xl px-4">
+              @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
             </p>
           </footer>
         </main>

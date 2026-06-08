@@ -81,12 +81,134 @@ async function initDb() {
       ALTER TABLE scoring_riesgo ADD COLUMN IF NOT EXISTS tipo VARCHAR(50);
       ALTER TABLE scoring_riesgo ADD COLUMN IF NOT EXISTS payload JSONB;
     `);
+    // Ensure canal_denuncias has all required columns
+    await pool.query(`
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS causa VARCHAR(100);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS relacion_empresa VARCHAR(100);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS receptor VARCHAR(150);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS involucrados JSONB;
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS denunciante_documento VARCHAR(50);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS denunciante_telefono VARCHAR(50);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS denunciante_email VARCHAR(250);
+      ALTER TABLE canal_denuncias ADD COLUMN IF NOT EXISTS fecha_cierre TIMESTAMP;
+    `);
   } catch (err) {
     console.error("Error initializing database:", err);
   }
 }
 
-initDb();
+async function checkAndNotifyScheduled(entityId: number) {
+  try {
+    const matches = await pool.query(`
+      SELECT b.id, b.id_usuario 
+      FROM base_programada b
+      WHERE b.notify = TRUE AND (b.entidad_hook IS NULL OR b.entidad_hook = '' OR b.entidad_hook = 'Actos Ilícitos' OR b.entidad_hook = 'PEP' OR b.entidad_hook NOT SIMILAR TO '[0-9]+')
+      AND (
+        -- Match by document (if scheduled search has a document)
+        (b.documento IS NOT NULL AND b.documento <> '' AND EXISTS (
+          SELECT 1 FROM entidades e WHERE e.id = $1 AND e.documento = b.documento
+        ))
+        OR
+        -- Match by name (if scheduled search has no document)
+        ((b.documento IS NULL OR b.documento = '') AND (
+          (b.tipo_entidad = 'juridica' AND EXISTS (
+            SELECT 1 FROM personas_juridicas pj WHERE pj.id_entidades = $1 AND pj.razon_social ILIKE '%' || b.nombres || '%'
+          ))
+          OR
+          (b.tipo_entidad = 'natural' AND EXISTS (
+            SELECT 1 FROM personas_naturales pn 
+            WHERE pn.id_entidades = $1 
+            AND (
+              (COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'')) ILIKE ('%' || b.nombres || '%')
+              OR b.nombres ILIKE ('%' || COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'') || '%')
+            )
+          ))
+        ))
+      )
+    `, [entityId]);
+
+    for (const row of matches.rows) {
+      // 1. Update base_programada to set entidad_hook to the entity ID
+      await pool.query(
+        "UPDATE base_programada SET entidad_hook = $1 WHERE id = $2",
+        [String(entityId), row.id]
+      );
+
+      // 2. Insert notification if not exists
+      const existingNotif = await pool.query(
+        "SELECT 1 FROM notificaciones WHERE id_usuarios = $1 AND id_base_programada = $2 AND id_entidades = $3",
+        [row.id_usuario, row.id, entityId]
+      );
+      if (existingNotif.rows.length === 0) {
+        await pool.query(
+          "INSERT INTO notificaciones(id_usuarios, id_base_programada, id_entidades) VALUES($1, $2, $3)",
+          [row.id_usuario, row.id, entityId]
+        );
+      }
+
+      // 3. Emit real-time notification
+      io.to(`user_${row.id_usuario}`).emit("notification", { message: "Se ha encontrado una coincidencia programada", entityId: entityId });
+    }
+  } catch (err) {
+    console.error("Error in checkAndNotifyScheduled:", err);
+  }
+}
+
+async function resolveExistingScheduledMatches() {
+  try {
+    const scheduled = await pool.query("SELECT * FROM base_programada WHERE notify = TRUE");
+    for (const b of scheduled.rows) {
+      // Find matching entity
+      const match = await pool.query(`
+        SELECT e.id FROM entidades e
+        LEFT JOIN personas_naturales pn ON pn.id_entidades = e.id
+        LEFT JOIN personas_juridicas pj ON pj.id_entidades = e.id
+        WHERE (
+          -- Match by document if provided
+          ($1::varchar IS NOT NULL AND $1::varchar <> '' AND e.documento = $1::varchar)
+        ) OR (
+          -- Match by name if document is not provided
+          ($1::varchar IS NULL OR $1::varchar = '') AND (
+            ($2::varchar = 'juridica' AND pj.razon_social ILIKE '%' || $3::varchar || '%')
+            OR
+            ($2::varchar = 'natural' AND (
+              (COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'')) ILIKE '%' || $3::varchar || '%'
+              OR $3::varchar ILIKE ('%' || COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'') || '%')
+            ))
+          )
+        )
+        LIMIT 1
+      `, [b.documento || "", b.tipo_entidad || "", b.nombres || ""]);
+
+      if (match.rows.length > 0) {
+        const entityId = match.rows[0].id;
+        if (b.entidad_hook !== String(entityId)) {
+          await pool.query(
+            "UPDATE base_programada SET entidad_hook = $1 WHERE id = $2",
+            [String(entityId), b.id]
+          );
+        }
+        const notif = await pool.query(
+          "SELECT 1 FROM notificaciones WHERE id_usuarios = $1 AND id_base_programada = $2 AND id_entidades = $3",
+          [b.id_usuario, b.id, entityId]
+        );
+        if (notif.rows.length === 0) {
+          await pool.query(
+            "INSERT INTO notificaciones(id_usuarios, id_base_programada, id_entidades) VALUES($1, $2, $3)",
+            [b.id_usuario, b.id, entityId]
+          );
+        }
+      }
+    }
+    console.log("[STARTUP] resolved existing base_programada matches successfully.");
+  } catch (err) {
+    console.error("Error resolving existing base_programada matches on startup:", err);
+  }
+}
+
+initDb().then(() => {
+  resolveExistingScheduledMatches();
+});
 
 io.on("connection", (socket) => {
   socket.on("join", (uid) => {
@@ -297,6 +419,22 @@ app.get("/profile", requireAuth, async (req: any, res) => {
   }
 });
 
+app.put("/profile", requireAuth, async (req: any, res) => {
+  try {
+    const { nombres, ape_pat, ape_mat, cargo, empresa } = req.body;
+    if (!nombres) return res.status(400).json({ error: "El campo nombres es requerido" });
+    await pool.query(
+      "UPDATE usuarios SET nombres = $1, ape_pat = $2, ape_mat = $3, cargo = $4, empresa = $5 WHERE id = $6",
+      [nombres, ape_pat || "", ape_mat || "", cargo || "", empresa || "", req.uid]
+    );
+    const updated = await pool.query("SELECT * FROM usuarios WHERE id = $1", [req.uid]);
+    res.json(updated.rows[0]);
+  } catch (err) {
+    console.error("Error al actualizar perfil:", err);
+    res.status(500).json({ error: "Error al actualizar perfil" });
+  }
+});
+
 app.get("/schedule", requireAuth, async (req: any, res) => {
   try {
     const r = await pool.query(`
@@ -327,18 +465,60 @@ app.get("/schedule", requireAuth, async (req: any, res) => {
 
 app.post("/schedule", requireAuth, async (req: any, res) => {
   try {
-    const { nombres, documento, cargo, rubros, tipo_entidad } = req.body;
-    // For Natural Person, 'nombres' should contain the full name from the frontend
-    await pool.query(
-      "INSERT INTO base_programada (id_usuario, nombres, documento, cargo, rubros, tipo_entidad) VALUES ($1, $2, $3, $4, $5, $6)",
-      [req.uid, nombres, documento || "", cargo || "", rubros || "", tipo_entidad]
+    const { nombres, documento, cargo, rubros, tipo_entidad, fecha_consulta, entidad_hook } = req.body;
+    
+    // Check if the entity already exists in the database
+    let existingEntityId: number | null = null;
+    const existingRes = await pool.query(`
+      SELECT e.id FROM entidades e
+      LEFT JOIN personas_naturales pn ON pn.id_entidades = e.id
+      LEFT JOIN personas_juridicas pj ON pj.id_entidades = e.id
+      WHERE (
+        -- Match by document if provided
+        ($1::varchar IS NOT NULL AND $1::varchar <> '' AND e.documento = $1::varchar)
+      ) OR (
+        -- Match by name if document is not provided
+        ($1::varchar IS NULL OR $1::varchar = '') AND (
+          ($2::varchar = 'juridica' AND pj.razon_social ILIKE '%' || $3::varchar || '%')
+          OR
+          ($2::varchar = 'natural' AND (
+            (COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'')) ILIKE '%' || $3::varchar || '%'
+            OR $3::varchar ILIKE ('%' || COALESCE(pn.nombre,'') || ' ' || COALESCE(pn.ape_pat,'') || ' ' || COALESCE(pn.ape_mat,'') || '%')
+          ))
+        )
+      )
+      LIMIT 1
+    `, [documento || "", tipo_entidad || "", nombres || ""]);
+
+    if (existingRes.rows.length > 0) {
+      existingEntityId = existingRes.rows[0].id;
+    }
+
+    const entidadHookVal = existingEntityId ? String(existingEntityId) : (entidad_hook || null);
+
+    const inserted = await pool.query(
+      "INSERT INTO base_programada (id_usuario, nombres, documento, cargo, rubros, tipo_entidad, fecha_consulta, entidad_hook) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+      [req.uid, nombres, documento || "", cargo || "", rubros || "", tipo_entidad, fecha_consulta ? parseFecha(fecha_consulta) : null, entidadHookVal]
     );
+
+    if (existingEntityId) {
+      const schedId = inserted.rows[0].id;
+      // Insert notification immediately
+      await pool.query(
+        "INSERT INTO notificaciones(id_usuarios, id_base_programada, id_entidades) VALUES($1, $2, $3)",
+        [req.uid, schedId, existingEntityId]
+      );
+      // Emit socket notification
+      io.to(`user_${req.uid}`).emit("notification", { message: "Se ha encontrado una coincidencia programada", entityId: existingEntityId });
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error("Error programming search:", err);
     res.status(500).json({ error: "Error al programar búsqueda" });
   }
 });
+
 
 app.delete("/schedule/:id", requireAuth, async (req: any, res) => {
   try {
@@ -706,25 +886,6 @@ app.get("/entity/:id", async (req, res) => {
     res.status(500).json({ error: "detalle falló" });
   }
 });
-
-app.post("/schedule", async (req, res) => {
-  try {
-    const auth = String(req.headers.authorization || "");
-    const decoded = jwt.verify(auth.replace("Bearer ", ""), jwtSecret) as any;
-    const uid = Number(decoded.uid);
-    const body = req.body || {};
-    const inserted = await pool.query(
-      "INSERT INTO base_programada(id_usuario, nombres, documento, cargo, rubros, tipo_entidad, entidad_hook, notify) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id",
-      [uid, body.nombres || "", body.documento || "", body.cargo || "", body.rubros || "", body.tipo_entidad || "", body.entidad_hook || "", true]
-    );
-    res.json({ id: inserted.rows[0].id });
-  } catch {
-    res.status(401).json({ error: "programación falló" });
-  }
-});
-
-
-
 async function resolveTipoDocumento(name: string): Promise<number | null> {
   if (!name) return null;
   if (/^\d+$/.test(name)) {
@@ -832,24 +993,7 @@ app.post("/entity", requireAuth, async (req: any, res) => {
     io.emit("entity_added", { id });
 
     // Check if this new entity matches any programmed search
-    const scheduled = await pool.query("SELECT * FROM base_programada WHERE notify = TRUE");
-    for (const sched of scheduled.rows) {
-      const newEntity = await pool.query("SELECT * FROM entidades WHERE id = $1", [id]);
-      const entDoc = newEntity.rows[0]?.documento;
-
-      let isMatch = false;
-      if (entDoc && sched.documento && entDoc.toLowerCase() === sched.documento.toLowerCase()) {
-        isMatch = true;
-      }
-
-      if (isMatch) {
-        await pool.query(
-          "INSERT INTO notificaciones(id_usuarios, id_base_programada, id_entidades) VALUES($1, $2, $3)",
-          [sched.id_usuario, sched.id, id]
-        );
-        io.to(`user_${sched.id_usuario}`).emit("notification", { message: "Se ha encontrado una coincidencia programada", entityId: id });
-      }
-    }
+    await checkAndNotifyScheduled(id);
     res.json({ id });
   } catch (err) {
     await client.query("ROLLBACK");
@@ -1181,6 +1325,9 @@ app.post("/scoring", requireAuth, async (req: any, res) => {
             [id_entidad, name]
           );
         }
+        
+        // Check if this newly created entity matches any programmed search
+        await checkAndNotifyScheduled(id_entidad);
       }
     }
     
@@ -1198,21 +1345,61 @@ app.post("/scoring", requireAuth, async (req: any, res) => {
 // CANAL DE DENUNCIAS
 app.post("/denuncias", async (req, res) => {
   try {
-    const { anonimo, nombre, contacto, titulo, detalle, evidencia_url } = req.body;
+    const auth = req.headers.authorization;
+    let uid: number | null = null;
+    if (auth && auth.startsWith("Bearer ")) {
+      try {
+        const token = auth.replace("Bearer ", "");
+        const decoded = jwt.verify(token, jwtSecret) as any;
+        uid = Number(decoded.uid);
+      } catch { }
+    }
+    
+    const {
+      anonimo,
+      denunciante_nombre,
+      denunciante_contacto,
+      denunciante_documento,
+      denunciante_telefono,
+      denunciante_email,
+      titulo,
+      detalle,
+      evidencia_url,
+      causa,
+      relacion_empresa,
+      receptor,
+      involucrados
+    } = req.body;
+
     await pool.query(
-      "INSERT INTO canal_denuncias (anonimo, denunciante_nombre, denunciante_contacto, titulo, detalle, evidencia_url) VALUES ($1, $2, $3, $4, $5, $6)",
-      [anonimo, nombre, contacto, titulo, detalle, evidencia_url]
+      `INSERT INTO canal_denuncias (
+        id_usuario, anonimo, denunciante_nombre, denunciante_contacto, 
+        denunciante_documento, denunciante_telefono, denunciante_email,
+        titulo, detalle, evidencia_url, causa, relacion_empresa, receptor, involucrados
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+      [
+        uid, anonimo ?? true, denunciante_nombre || null, denunciante_contacto || null,
+        denunciante_documento || null, denunciante_telefono || null, denunciante_email || null,
+        titulo || "Denuncia", detalle || "", evidencia_url || null,
+        causa || null, relacion_empresa || null, receptor || null,
+        involucrados ? JSON.stringify(involucrados) : null
+      ]
     );
     res.json({ ok: true });
   } catch (err) {
+    console.error("Error al enviar denuncia:", err);
     res.status(500).json({ error: "Error al enviar denuncia" });
   }
 });
 
 app.get("/denuncias", requireAuth, async (req: any, res) => {
   try {
-    if (req.userRole !== "admin") return res.status(403).json({ error: "Solo administradores" });
-    const r = await pool.query("SELECT * FROM canal_denuncias ORDER BY fecha_creacion DESC");
+    let r;
+    if (req.userRole === "admin") {
+      r = await pool.query("SELECT * FROM canal_denuncias ORDER BY fecha_creacion DESC");
+    } else {
+      r = await pool.query("SELECT * FROM canal_denuncias WHERE id_usuario = $1 ORDER BY fecha_creacion DESC", [req.uid]);
+    }
     res.json(r.rows);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener denuncias" });
@@ -1223,7 +1410,20 @@ app.patch("/denuncias/:id", requireAuth, async (req: any, res) => {
   try {
     if (req.userRole !== "admin") return res.status(403).json({ error: "Solo administradores" });
     const { estado } = req.body;
-    await pool.query("UPDATE canal_denuncias SET estado = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $2", [estado, req.params.id]);
+    
+    let query = "UPDATE canal_denuncias SET estado = $1, fecha_actualizacion = CURRENT_TIMESTAMP";
+    const params: any[] = [estado];
+    
+    if (estado === "CERRADO") {
+      query += ", fecha_cierre = CURRENT_TIMESTAMP";
+    } else {
+      query += ", fecha_cierre = NULL";
+    }
+    
+    query += " WHERE id = $" + (params.length + 1);
+    params.push(req.params.id);
+    
+    await pool.query(query, params);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: "Error al actualizar denuncia" });

@@ -169,7 +169,7 @@ export default function LoginPage() {
       {/* Footer Global */}
       <footer className="h-10 bg-[#32508E] flex items-center justify-center px-4 shrink-0 z-30">
         <p className="text-[12px] text-white/90 text-center">
-          @Copyright; Desarrollado por el área de  TI - INFORMA PERÚ. Todos los derechos reservados 2026
+          @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
         </p>
       </footer>
 

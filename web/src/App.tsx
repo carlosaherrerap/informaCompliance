@@ -13,6 +13,7 @@ import ScoringRiesgoPage from "./pages/ScoringRiesgoPage";
 import ScoringNaturalPage from "./pages/ScoringNaturalPage";
 import ScoringCompanyPage from "./pages/ScoringCompanyPage";
 import CanalDenunciasPage from "./pages/CanalDenunciasPage";
+import DenunciaFormPage from "./pages/DenunciaFormPage";
 import ReporteOperacionesPage from "./pages/ReporteOperacionesPage";
 import { LoadPage } from "./pages/LoadPage";
 
@@ -54,7 +55,8 @@ export default function App() {
       <Route path="/scoring" element={<RequireAuth><ScoringRiesgoPage /></RequireAuth>} />
       <Route path="/scoring/generate/natural" element={<RequireAuth><ScoringNaturalPage /></RequireAuth>} />
       <Route path="/scoring/generate/company" element={<RequireAuth><ScoringCompanyPage /></RequireAuth>} />
-      <Route path="/denuncias" element={<CanalDenunciasPage />} />
+      <Route path="/denuncias" element={<RequireAuth><CanalDenunciasPage /></RequireAuth>} />
+      <Route path="/denunciar" element={<DenunciaFormPage />} />
       <Route path="/reporte-operaciones" element={<RequireAuth><ReporteOperacionesPage /></RequireAuth>} />
       <Route path="/completar-perfil" element={<RequireAuth><CompletarPerfilPage /></RequireAuth>} />
       <Route path="/load" element={<RequireAuth><LoadPage /></RequireAuth>} />

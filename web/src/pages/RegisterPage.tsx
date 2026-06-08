@@ -29,9 +29,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-slate-50 font-display text-[#111318]">
+    <div className="relative min-h-screen flex flex-col bg-[#eef2f6] font-display text-[#111318]">
       {/* Header Global */}
-      <header className="h-20 bg-white border-b border-slate-100 flex items-center px-8 shrink-0 z-20">
+      <header className="h-20 bg-white border-b border-slate-200 flex items-center px-8 shrink-0 z-20">
         <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
       </header>
 
@@ -80,9 +80,9 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <footer className="w-full py-10 flex items-center justify-center p-4 border-t border-slate-100 bg-white">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl">
-            @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+        <footer className="w-full py-10 flex items-center justify-center p-4 border-t border-slate-200 bg-white">
+          <p className="text-[10px] font-bold text-slate-500 tracking-widest text-center max-w-2xl">
+            @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
           </p>
         </footer>
         <style>{`

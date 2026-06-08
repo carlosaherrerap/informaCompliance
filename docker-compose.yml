@@ -48,7 +48,7 @@ services:
     volumes:
       - ./api:/app
       - /app/node_modules
-#Frontend de comunicacion con el usuario y el backend
+     #Frontend de comunicacion con el usuario y el backend
   web:
     build: ./web
     environment:
@@ -62,7 +62,7 @@ services:
     volumes:
       - ./web:/app
       - /app/node_modules
-#Servicio de excel para comunicacion con el backend y generacion de archivos excel
+    #Servicio de excel para comunicacion con el backend y generacion de archivos excel
   excel:
     build: ./excel-service
     environment:

@@ -5,27 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>INFORMAPERU</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
             colors: {
-              primary: "#0f49bd",
-              "background-light": "#f6f6f8",
-              "background-dark": "#101622",
+              /* Brand navy (from logo) */
+              primary:   "#2B3990",
+              "primary-dark": "#1e2a6e",
+              "primary-light": "#3d4fa8",
+              /* Brand red accent (from logo) */
+              accent:    "#E63946",
+              "accent-dark": "#c0303b",
+              /* Surfaces */
+              "surface":     "#ffffff",
+              "surface-2":   "#f4f5f9",
+              "surface-3":   "#e8eaf2",
+              "background-light": "#f4f5f9",
+              "background-dark":  "#101622",
+              /* Text */
+              "ink":       "#1a1d2e",
+              "ink-muted": "#5a5f7a",
             },
-            fontFamily: { display: ["Inter", "sans-serif"] },
-            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" }
+            fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] },
           }
         }
       }
     </script>
-    <script type="module" crossorigin src="/assets/index-BIu6ZMep.js"></script>
+    <style>
+      * { font-family: 'Inter', system-ui, sans-serif; }
+      /* Smooth focus ring - brand navy */
+      :focus-visible { outline: 2px solid #2B3990; outline-offset: 2px; }
+    </style>
+    <script type="module" crossorigin src="/assets/index-B_AxAoCo.js"></script>
   </head>
   <body>
     <div id="root"></div>
   </body>
-  </html>
+</html>

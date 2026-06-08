@@ -93,7 +93,7 @@ export default function CompletarPerfilPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-display">
-            <div className="max-w-2xl w-full bg-white rounded-[2rem] shadow-2xl p-10 border border-slate-100 relative overflow-hidden">
+            <div className="max-w-2xl w-full bg-white rounded-[2rem] shadow-2xl p-10 border border-slate-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                     <span className="material-symbols-outlined text-8xl text-primary font-black">extension</span>
                 </div>
@@ -112,15 +112,15 @@ export default function CompletarPerfilPage() {
                             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-l-4 border-primary pl-3">Datos de Identidad</h3>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombres</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={nombres} onChange={e => setNombres(e.target.value)} required />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={nombres} onChange={e => setNombres(e.target.value)} required />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ap. Paterno</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={apePat} onChange={e => setApePat(e.target.value)} required />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={apePat} onChange={e => setApePat(e.target.value)} required />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documento (DNI/RUC)</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={documento} onChange={e => setDocumento(e.target.value)} placeholder="Ej: 70221932" />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={documento} onChange={e => setDocumento(e.target.value)} placeholder="Ej: 70221932" />
                             </div>
                         </div>
 
@@ -128,28 +128,28 @@ export default function CompletarPerfilPage() {
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-l-4 border-slate-200 pl-3">Ubicación y Contacto</h3>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={departamento} onChange={e => setDepartamento(e.target.value)} placeholder="LIMA" />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={departamento} onChange={e => setDepartamento(e.target.value)} placeholder="LIMA" />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provincia</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={provincia} onChange={e => setProvincia(e.target.value)} placeholder="LIMA" />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={provincia} onChange={e => setProvincia(e.target.value)} placeholder="LIMA" />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Distrito</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={distrito} onChange={e => setDistrito(e.target.value)} placeholder="SAN ISIDRO" />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={distrito} onChange={e => setDistrito(e.target.value)} placeholder="SAN ISIDRO" />
                             </div>
                         </div>
                     </div>
 
                     {!isSocial && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario de Acceso</label>
-                                <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-primary/30 outline-none transition-all" value={usuario} onChange={e => setUsuario(e.target.value)} required />
+                                <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold focus:border-primary/30 outline-none transition-all" value={usuario} onChange={e => setUsuario(e.target.value)} required />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contraseña</label>
-                                <input type="password" className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-primary/30 outline-none transition-all" value={clave} onChange={e => setClave(e.target.value)} required />
+                                <input type="password" className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold focus:border-primary/30 outline-none transition-all" value={clave} onChange={e => setClave(e.target.value)} required />
                             </div>
                         </div>
                     )}
@@ -157,11 +157,11 @@ export default function CompletarPerfilPage() {
                     <div className="grid grid-cols-2 gap-6 pt-2">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cargo / Puesto</label>
-                            <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={cargo} onChange={e => setCargo(e.target.value)} />
+                            <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={cargo} onChange={e => setCargo(e.target.value)} />
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Empresa</label>
-                            <input className="bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={empresa} onChange={e => setEmpresa(e.target.value)} />
+                            <input className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm font-bold uppercase focus:border-primary/30 outline-none transition-all" value={empresa} onChange={e => setEmpresa(e.target.value)} />
                         </div>
                     </div>
 

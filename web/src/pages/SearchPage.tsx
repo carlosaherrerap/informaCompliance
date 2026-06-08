@@ -38,7 +38,7 @@ export default function SearchPage() {
     { name: "Matriz de Riesgos", icon: "grid_on", enabled: true, href: "/matriz-riesgos" },
     { name: "Scoring de Riesgo", icon: "trending_up", enabled: true, href: "/scoring" },
     { name: "Registro de Operaciones", icon: "assignment", enabled: true, href: "/registro-operaciones" },
-    { name: "Canal de Denuncias", icon: "campaign", enabled: false, href: "/denuncias" },
+    { name: "Canal de Denuncias", icon: "campaign", enabled: true, href: "/denuncias" },
     { name: "Mis Cursos", icon: "school", enabled: false, href: "/mis-cursos" },
     { name: "Administrador", icon: "admin_panel_settings", enabled: userRole === 'admin', href: "/load" },
   ];
@@ -283,7 +283,7 @@ export default function SearchPage() {
     }
 
     const doc = new jsPDF();
-    
+
     try {
       const logoBase64 = await getBase64ImageFromUrl("/logo-informaPeru.jpg");
       doc.addImage(logoBase64, 'JPEG', 14, 10, 48, 16);
@@ -300,7 +300,7 @@ export default function SearchPage() {
         } else if (payload.email) {
           username = payload.email.split("@")[0];
         }
-      } catch {}
+      } catch { }
     }
 
     const formattedDate = formatDateTime(new Date());
@@ -322,7 +322,7 @@ export default function SearchPage() {
 
     const ent = fullData.entidad || fullData;
     const isNatural = ent.tipo_entidad === 'natural' || ent.tipo === 'natural';
-    
+
     const detailRows = [
       [
         `TIPO: ${isNatural ? 'N' : 'J'}`,
@@ -377,7 +377,7 @@ export default function SearchPage() {
 
     const finalYOfFirstTable = (doc as any).lastAutoTable.finalY || 120;
     const obsRows: any[] = [];
-    
+
     if (fullData.manchas && fullData.manchas.length > 0) {
       fullData.manchas.forEach((m: any, index: number) => {
         if (index > 0) {
@@ -459,7 +459,7 @@ export default function SearchPage() {
           </div>
 
           <style>{`.sidebar-scroll{overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none !important;}.sidebar-scroll::-webkit-scrollbar{display:none !important;}`}</style>
-          <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{msOverflowStyle:'none',scrollbarWidth:'none'}}>
+          <nav className="flex-1 px-4 py-6 space-y-4 flex flex-col sidebar-scroll" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {/* Toggle Button */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -477,7 +477,7 @@ export default function SearchPage() {
                 <button
                   onClick={() => navigate('/home')}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === '/home' ? 'border-2 border-white text-white' : 'border border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
-                  style={{backgroundColor: 'transparent'}}
+                  style={{ backgroundColor: 'transparent' }}
                 >
                   <span className="material-symbols-outlined text-xl">home</span>
                   {!isCollapsed && <span>Inicio</span>}
@@ -489,7 +489,7 @@ export default function SearchPage() {
                     disabled={!m.enabled}
                     onClick={() => navigate(m.href)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold uppercase text-[10px] tracking-wide text-slate-400 hover:text-white hover:border hover:border-white ${location.pathname === m.href ? 'border-2 border-white text-white' : 'border border-transparent'} ${!m.enabled ? 'opacity-50 cursor-not-allowed' : ''} ${isCollapsed ? 'justify-center' : ''}`}
-                    style={{backgroundColor: 'transparent'}}
+                    style={{ backgroundColor: 'transparent' }}
                   >
                     <span className="material-symbols-outlined text-xl">{m.icon}</span>
                     {!isCollapsed && (
@@ -518,16 +518,16 @@ export default function SearchPage() {
         </aside>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
+          <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-10 shrink-0 z-40 relative">
             <div className="flex items-center gap-4">
               <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setIsSidebarOpen(true)}>
                 <span className="material-symbols-outlined">menu</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-4 relative">
+            <div className="flex items-center gap-3 relative">
               {/* Tokens usage info in header */}
-              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl">
                 <span className="material-symbols-outlined text-primary text-xl">database</span>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-primary uppercase leading-tight">{tokens ?? "-"}</span>
@@ -535,10 +535,79 @@ export default function SearchPage() {
                 </div>
               </div>
 
+              {/* Notificaciones - fuera del dropdown de perfil */}
+              <div className="relative">
+                <button
+                  onClick={() => { setShowNotifDropdown(!showNotifDropdown); setShowProfileDropdown(false); }}
+                  className={`relative flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-300 ${showNotifDropdown ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`}
+                >
+                  <span className="material-symbols-outlined text-xl">notifications</span>
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 size-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full shadow-md">
+                      {notifications.length > 9 ? '9+' : notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifDropdown(false)} />
+                    <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                      <div className="px-5 py-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.2em]">Alertas del Sistema</p>
+                          {notifications.length > 0 && (
+                            <p className="text-[9px] text-slate-400 font-bold mt-0.5">{notifications.length} sin leer</p>
+                          )}
+                        </div>
+                        {notifications.length > 0 && (
+                          <button
+                            onClick={() => { notifications.forEach(n => markNotificationRead(n.id)); }}
+                            className="text-[9px] font-black text-primary hover:text-blue-700 uppercase tracking-widest transition-colors"
+                          >
+                            Marcar todas
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">
+                        {notifications.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-10 gap-2">
+                            <span className="material-symbols-outlined text-3xl text-slate-200">notifications_off</span>
+                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Sin alertas pendientes</p>
+                          </div>
+                        ) : notifications.map((n: any) => (
+                          <button
+                            key={n.id}
+                            onClick={() => { markNotificationRead(n.id); setShowNotifDropdown(false); }}
+                            className="w-full text-left px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="size-2 rounded-full bg-primary mt-1.5 shrink-0 group-hover:bg-blue-700 transition-colors" />
+                              <div>
+                                <p className="text-[11px] font-black text-slate-800 uppercase leading-tight">
+                                  Coincidencia detectada
+                                </p>
+                                {n.ent_doc && (
+                                  <p className="text-[9px] text-slate-500 font-bold mt-0.5">Doc: {n.ent_doc}</p>
+                                )}
+                                <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                                  {new Date(n.fecha_enviado).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                              <span className="material-symbols-outlined text-sm text-slate-300 ml-auto shrink-0 group-hover:text-slate-400 transition-colors">close</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* Perfil Dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  onClick={() => { setShowProfileDropdown(!showProfileDropdown); setShowNotifDropdown(false); }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 ${showProfileDropdown ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold'}`}
                 >
                   <span className="material-symbols-outlined text-2xl">account_circle</span>
@@ -549,45 +618,73 @@ export default function SearchPage() {
                 {showProfileDropdown && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileDropdown(false)} />
-                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-                      <div className="p-4 bg-slate-50/50 border-b border-slate-100">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Acciones y Herramientas</p>
+                    <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-surface-3 overflow-hidden z-50">
+                      <div className="px-4 py-3 border-b border-surface-3 bg-surface-2">
+                        <p className="text-xs font-semibold text-ink-muted">Acciones y herramientas</p>
                       </div>
-                      <div className="p-2 space-y-1">
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-blue-600 hover:bg-blue-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); }}>
-                          <span className="material-symbols-outlined text-xl text-blue-500">verified</span>
-                          <span>DDA (Ampliada)</span>
+                      <div className="p-1.5 space-y-0.5">
+                        <button
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary hover:bg-primary/5 transition-colors text-sm font-medium text-left"
+                          onClick={() => { setShowProfileDropdown(false); navigate('/perfil'); }}
+                        >
+                          <i className="bi bi-person-fill text-primary text-base w-4" />
+                          Mi Perfil
                         </button>
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-green-600 hover:bg-green-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); (document.getElementById('massive-upload') as HTMLInputElement)?.click(); }}>
-                          <span className="material-symbols-outlined text-xl text-green-500">upload_file</span>
-                          <span>Cargar Masiva</span>
-                        </button>
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide text-left" onClick={() => { setShowProfileDropdown(false); setIsScheduleModalOpen(true); }}>
-                          <span className="material-symbols-outlined text-xl">calendar_add_on</span>
-                          <span>Programar Búsqueda</span>
+                        <button
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink hover:bg-surface-2 transition-colors text-sm font-medium text-left"
+                          onClick={() => { setShowProfileDropdown(false); }}
+                        >
+                          <i className="bi bi-patch-check-fill text-blue-600 text-base w-4" />
+                          DDA Ampliada
                         </button>
 
-                        <div className="h-px bg-slate-100 my-2 mx-4" />
-
-                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors font-bold uppercase text-[10px] tracking-wide" onClick={() => { setShowNotifDropdown(!showNotifDropdown); }}>
-                          <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-xl">notifications</span>
-                            <span>Alertas Sistema</span>
-                          </div>
-                          {notifications.length > 0 && <span className="size-5 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full shadow-lg shadow-red-200">{notifications.length}</span>}
-                        </button>
+                        {/* Carga Masiva con descarga de plantilla */}
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            className="flex-1 flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink hover:bg-surface-2 transition-colors text-sm font-medium text-left"
+                            onClick={() => { setShowProfileDropdown(false); (document.getElementById('massive-upload') as HTMLInputElement)?.click(); }}
+                          >
+                            <i className="bi bi-upload text-green-600 text-base w-4" />
+                            Cargar masiva
+                          </button>
+                          <button
+                            className="p-2 rounded-lg text-ink-muted hover:bg-surface-2 transition-colors"
+                            title="Descargar plantilla Excel"
+                            onClick={() => { downloadMassiveTemplate(); }}
+                          >
+                            <i className="bi bi-file-earmark-excel-fill text-green-600 text-base" />
+                          </button>
+                        </div>
+                        <input
+                          id="massive-upload"
+                          type="file"
+                          accept=".xlsx,.xls"
+                          className="hidden"
+                          onChange={e => e.target.files?.[0] && handleMassiveSearch(e.target.files[0])}
+                        />
 
                         <button
-                          className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-red-500 hover:bg-red-50 transition-colors font-bold uppercase text-[10px] tracking-[0.2em] mt-2 bg-red-50/30"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink hover:bg-surface-2 transition-colors text-sm font-medium text-left"
+                          onClick={() => { setShowProfileDropdown(false); setIsScheduleModalOpen(true); }}
+                        >
+                          <i className="bi bi-calendar-plus-fill text-ink-muted text-base w-4" />
+                          Programar búsqueda
+                        </button>
+
+                        <div className="my-1 border-t border-surface-3 mx-2" />
+
+                        <button
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
                           onClick={() => { localStorage.removeItem("auth_token"); navigate("/login"); }}
                         >
-                          <span className="material-symbols-outlined text-xl">logout</span>
-                          <span>Cerrar Sesión</span>
+                          <i className="bi bi-box-arrow-right text-red-500 text-base w-4" />
+                          Cerrar sesión
                         </button>
                       </div>
                     </div>
                   </>
                 )}
+
               </div>
             </div>
           </header>
@@ -618,7 +715,7 @@ export default function SearchPage() {
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
+                <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
                   <button className="px-6 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2" onClick={() => { setQNombre(""); setQApePat(""); setQApeMat(""); setQDoc(""); consultar(1); }}>
                     <span className="material-symbols-outlined text-sm">refresh</span>
                     Limpiar
@@ -655,7 +752,7 @@ export default function SearchPage() {
                 {loading ? <LoadingSkeleton /> : <ResultsTable isSearching={isSearching} data={results} onDetail={abrirDetalle} onPdf={exportarPDF} showWarning={showExactMatchWarning} />}
               </div>
 
-               {isSearching && coincidences.length > 0 && (
+              {isSearching && coincidences.length > 0 && (
                 <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="size-2 bg-slate-400 rounded-full"></div>
@@ -668,9 +765,9 @@ export default function SearchPage() {
               )}
             </section>
 
-            <footer className="py-10 bg-white border-t border-slate-100 flex items-center justify-center mt-12">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center max-w-2xl px-4">
-                @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+            <footer className="py-10 bg-white border-t border-slate-200 flex items-center justify-center mt-12">
+              <p className="text-[10px] font-bold text-slate-500 tracking-widest text-center max-w-2xl px-4">
+                @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
               </p>
             </footer>
           </div>
@@ -739,15 +836,15 @@ export default function SearchPage() {
                               <InfoRow label="DNI" value={detailData.entidad.documento || '-'} />
                               <InfoRow label="Género" value={detailData.natural.sexo === 'M' ? 'Masculino' : detailData.natural.sexo === 'F' ? 'Femenino' : '-'} />
                               <InfoRow label="Estado Civil" value={
-                                detailData.extension?.natural?.estado_civil 
-                                  ? (function(ec: string, g: string) {
-                                      const isF = g === 'F';
-                                      if(ec === 'C') return isF ? 'Casada' : 'Casado';
-                                      if(ec === 'D') return isF ? 'Divorciada' : 'Divorciado';
-                                      if(ec === 'S') return isF ? 'Soltera' : 'Soltero';
-                                      if(ec === 'V') return isF ? 'Viuda' : 'Viudo';
-                                      return ec;
-                                    })(detailData.extension.natural.estado_civil.toUpperCase(), detailData.natural.sexo)
+                                detailData.extension?.natural?.estado_civil
+                                  ? (function (ec: string, g: string) {
+                                    const isF = g === 'F';
+                                    if (ec === 'C') return isF ? 'Casada' : 'Casado';
+                                    if (ec === 'D') return isF ? 'Divorciada' : 'Divorciado';
+                                    if (ec === 'S') return isF ? 'Soltera' : 'Soltero';
+                                    if (ec === 'V') return isF ? 'Viuda' : 'Viudo';
+                                    return ec;
+                                  })(detailData.extension.natural.estado_civil.toUpperCase(), detailData.natural.sexo)
                                   : '-'
                               } />
                             </>
@@ -972,7 +1069,7 @@ function ResultsTable({ data, onDetail, onPdf, isSearching, showWarning = false 
 function LoadingSkeleton() {
   return (
     <div className="flex flex-col items-center justify-center p-20 gap-4">
-      <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-100 border-b-primary"></div>
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-b-primary"></div>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Procesando información...</p>
     </div>
   );
@@ -1000,51 +1097,45 @@ function ScheduleSearchModal({ onClose, onScheduled }: { onClose: () => void, on
   async function fetchScheduledList() {
     const token = localStorage.getItem("auth_token") || "";
     try {
-      const r = await fetch(`${apiUrl}/schedule`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const r = await fetch(`${apiUrl}/schedule`, { headers: { Authorization: `Bearer ${token}` } });
       if (r.ok) setScheduledList(await r.json());
     } catch { }
   }
 
-  useEffect(() => {
-    fetchScheduledList();
-  }, []);
+  useEffect(() => { fetchScheduledList(); }, []);
 
   async function removeScheduled(id: number) {
     const token = localStorage.getItem("auth_token") || "";
     try {
-      const r = await fetch(`${apiUrl}/schedule/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const r = await fetch(`${apiUrl}/schedule/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       if (r.ok) fetchScheduledList();
     } catch { }
   }
 
   async function handleSaveManual() {
-    if (!formData.fullName) return setError("EL NOMBRE ES OBLIGATORIO");
+    if (!formData.fullName) return setError("El nombre es obligatorio.");
     setLoading(true);
     try {
-      // Store full name directly as requested
-      const payload = {
-        nombres: formData.fullName,
-        tipo_entidad: formData.tipo_entidad,
-        documento: "" // Could be extended if needed
-      };
-
       const token = localStorage.getItem("auth_token") || "";
       const r = await fetch(`${apiUrl}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ nombres: formData.fullName, tipo_entidad: formData.tipo_entidad, documento: "" })
       });
-      if (r.ok) {
-        setFormData({ fullName: '', tipo_entidad: 'natural' });
-        fetchScheduledList();
-      } else setError("ERROR AL GUARDAR");
-    } catch { setError("ERROR DE CONEXIÓN"); }
+      if (r.ok) { setFormData({ fullName: '', tipo_entidad: 'natural' }); fetchScheduledList(); setError(null); }
+      else setError("Error al guardar.");
+    } catch { setError("Error de conexión."); }
     finally { setLoading(false); }
+  }
+
+  function downloadScheduleTemplate() {
+    const headers = ["nombres", "documento", "cargo", "rubros", "tipo_entidad", "fecha_consulta", "entidad_hook"];
+    const example = ["JUAN PEREZ LOPEZ", "12345678", "GERENTE", "Banca", "natural", "2024-12-31", "https://webhook.site/"];
+    const ws = XLSX.utils.aoa_to_sheet([headers, example]);
+    ws['!cols'] = headers.map(() => ({ wch: 24 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Programacion");
+    XLSX.writeFile(wb, "plantilla_programacion_busqueda.xlsx");
   }
 
   async function handleExcelUpload(file: File) {
@@ -1057,7 +1148,6 @@ function ScheduleSearchModal({ onClose, onScheduled }: { onClose: () => void, on
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const json: any[] = XLSX.utils.sheet_to_json(sheet);
-
         const token = localStorage.getItem("auth_token") || "";
         for (const row of json) {
           await fetch(`${apiUrl}/schedule`, {
@@ -1068,95 +1158,173 @@ function ScheduleSearchModal({ onClose, onScheduled }: { onClose: () => void, on
               documento: row.documento,
               cargo: row.cargo,
               rubros: row.rubros,
-              tipo_entidad: row.tipo_entidad || 'natural'
+              tipo_entidad: row.tipo_entidad || 'natural',
+              fecha_consulta: row.fecha_consulta,
+              entidad_hook: row.entidad_hook,
             })
           });
         }
         fetchScheduledList();
-      } catch { setError("ERROR AL PROCESAR EXCEL"); }
+      } catch { setError("Error al procesar el archivo Excel."); }
       finally { setLoading(false); }
     };
     reader.readAsArrayBuffer(file);
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="font-black text-xl uppercase tracking-tight">Programar Búsqueda</h3>
-          <button onClick={onClose} className="size-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><span className="material-symbols-outlined">close</span></button>
+    <div className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-surface-3 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <i className="bi bi-calendar-plus text-primary text-lg" />
+            <h3 className="text-base font-semibold text-ink">Programar Búsqueda</h3>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-2 transition-colors text-ink-muted">
+            <i className="bi bi-x-lg text-sm" />
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 flex gap-1 mb-8 rounded-xl border border-slate-200 dark:border-slate-800">
-            <button className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${tab === 'manual' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`} onClick={() => setTab('manual')}>Ingreso Manual</button>
-            <button className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${tab === 'excel' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-400'}`} onClick={() => setTab('excel')}>Base Programada (Excel)</button>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+          {/* Tabs */}
+          <div className="flex gap-1 p-1 bg-surface-2 rounded-lg border border-surface-3">
+            <button
+              onClick={() => setTab('manual')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+                tab === 'manual' ? 'bg-white text-primary shadow-sm' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              Ingreso manual
+            </button>
+            <button
+              onClick={() => setTab('excel')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+                tab === 'excel' ? 'bg-white text-primary shadow-sm' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              Carga por Excel
+            </button>
           </div>
 
+          {/* Content */}
           {tab === 'manual' ? (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2 flex flex-col gap-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombres / Razón Social</label>
-                  <input className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" placeholder="Ej: ALEJANDRO VAZQUEZ RAMOS" value={formData.fullName} onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
+                <div className="sm:col-span-2 flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-ink-muted">Nombres / Razón Social</label>
+                  <input
+                    className="w-full rounded-lg border border-surface-3 bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Ej: Juan Pérez López"
+                    value={formData.fullName}
+                    onChange={e => setFormData({ ...formData, fullName: e.target.value })}
+                  />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo</label>
-                  <select className="input-partial-border rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 text-sm font-bold uppercase" value={formData.tipo_entidad} onChange={e => setFormData({ ...formData, tipo_entidad: e.target.value })}>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-ink-muted">Tipo</label>
+                  <select
+                    className="w-full rounded-lg border border-surface-3 bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={formData.tipo_entidad}
+                    onChange={e => setFormData({ ...formData, tipo_entidad: e.target.value })}
+                  >
                     <option value="natural">Persona Natural</option>
                     <option value="juridica">Persona Jurídica</option>
                   </select>
                 </div>
               </div>
-              <button disabled={loading} onClick={handleSaveManual} className="w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 disabled:opacity-50">
-                {loading ? "Registrando..." : "Guardar en Base Programada"}
+
+              {error && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <i className="bi bi-exclamation-triangle-fill text-xs" /> {error}
+                </p>
+              )}
+
+              <button
+                disabled={loading}
+                onClick={handleSaveManual}
+                className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 shadow-sm"
+              >
+                {loading ? "Guardando…" : "Guardar en base programada"}
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] gap-4 bg-slate-50/50 dark:bg-slate-800/20">
-              <span className="material-symbols-outlined text-4xl text-slate-300">upload_file</span>
-              <div className="text-center">
-                <p className="text-xs font-black uppercase text-slate-600 dark:text-slate-300">Subir Plantilla Excel</p>
-                <p className="text-[10px] font-medium text-slate-400 uppercase mt-1">Sube tu listado para monitoreo automático</p>
+            <div className="space-y-4">
+              {/* Template download */}
+              <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg border border-surface-3">
+                <div className="flex items-center gap-3">
+                  <i className="bi bi-file-earmark-excel-fill text-green-600 text-xl" />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Descargar plantilla</p>
+                    <p className="text-xs text-ink-muted">Campos: nombres, documento, cargo, rubros, tipo_entidad, fecha_consulta, entidad_hook</p>
+                  </div>
+                </div>
+                <button
+                  onClick={downloadScheduleTemplate}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors shadow-sm"
+                >
+                  <i className="bi bi-download text-xs" />
+                  Descargar
+                </button>
               </div>
-              <button disabled={loading} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black uppercase shadow-sm hover:shadow-md transition-all" onClick={() => (document.getElementById('excel-schedule') as HTMLInputElement)?.click()}>
-                {loading ? "Procesando..." : "Seleccionar Archivo"}
-                <input id="excel-schedule" type="file" accept=".xlsx,.xls" className="hidden" onChange={e => e.target.files?.[0] && handleExcelUpload(e.target.files[0])} />
-              </button>
+
+              {/* Upload zone */}
+              <div
+                className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-surface-3 rounded-lg gap-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                onClick={() => (document.getElementById('excel-schedule') as HTMLInputElement)?.click()}
+              >
+                <i className="bi bi-cloud-upload text-3xl text-ink-muted" />
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-ink">Subir archivo Excel</p>
+                  <p className="text-xs text-ink-muted mt-1">Arrastra o haz clic para seleccionar un .xlsx</p>
+                </div>
+                <button disabled={loading} className="px-4 py-2 bg-white border border-surface-3 rounded-lg text-sm font-medium text-ink hover:shadow-sm transition-all">
+                  {loading ? "Procesando…" : "Seleccionar archivo"}
+                </button>
+                <input id="excel-schedule" type="file" accept=".xlsx,.xls" className="hidden"
+                  onChange={e => e.target.files?.[0] && handleExcelUpload(e.target.files[0])}
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <i className="bi bi-exclamation-triangle-fill text-xs" /> {error}
+                </p>
+              )}
             </div>
           )}
 
-          {error && <p className="text-red-500 text-[10px] font-black uppercase mt-4 text-center">{error}</p>}
-
-          <div className="mt-12 space-y-4">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-4 border-slate-200 pl-3">Entidades en Seguimiento</h4>
-            <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-              <table className="w-full text-left text-[10px] border-collapse">
+          {/* Scheduled list */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-ink">Entidades en seguimiento</h4>
+            <div className="rounded-lg border border-surface-3 overflow-hidden">
+              <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="bg-white dark:bg-slate-900">
-                    <th className="px-4 py-3 font-black uppercase border-b border-slate-100 dark:border-slate-800">Entidad</th>
-                    <th className="px-4 py-3 font-black uppercase border-b border-slate-100 dark:border-slate-800">Tipo</th>
-                    <th className="px-4 py-3 font-black uppercase border-b border-slate-100 dark:border-slate-800 text-right">Estado</th>
+                  <tr className="bg-surface-2">
+                    <th className="px-4 py-2.5 text-xs font-semibold text-ink-muted border-b border-surface-3">Entidad</th>
+                    <th className="px-4 py-2.5 text-xs font-semibold text-ink-muted border-b border-surface-3">Tipo</th>
+                    <th className="px-4 py-2.5 text-xs font-semibold text-ink-muted border-b border-surface-3 text-right">Estado</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-surface-3">
                   {scheduledList.length === 0 ? (
-                    <tr><td colSpan={3} className="px-4 py-8 text-center text-slate-400 italic font-bold">Sin entidades programadas</td></tr>
+                    <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-ink-muted">Sin entidades programadas aún.</td></tr>
                   ) : scheduledList.map(item => (
-                    <tr key={item.id} className="hover:bg-white dark:hover:bg-slate-800 transition-colors group">
-                      <td className="px-4 py-3 font-black text-slate-700 dark:text-slate-300 uppercase">
-                        {item.nombres}
-                      </td>
-                      <td className="px-4 py-3 font-bold text-slate-400 uppercase">{item.tipo_entidad}</td>
+                    <tr key={item.id} className="hover:bg-surface-2 transition-colors">
+                      <td className="px-4 py-3 font-medium text-ink">{item.nombres}</td>
+                      <td className="px-4 py-3 text-ink-muted capitalize">{item.tipo_entidad}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
                           {item.encontrado ? (
-                            <span className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-black rounded uppercase text-[8px] animate-pulse">ENCONTRADO</span>
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 font-semibold rounded text-xs">Encontrado</span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-black rounded uppercase text-[8px]">PENDIENTE</span>
+                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 font-semibold rounded text-xs">Pendiente</span>
                           )}
-                          <button onClick={() => removeScheduled(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
-                            <span className="material-symbols-outlined text-sm">delete</span>
+                          <button
+                            onClick={() => removeScheduled(item.id)}
+                            className="p-1.5 text-ink-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          >
+                            <i className="bi bi-trash text-sm" />
                           </button>
                         </div>
                       </td>
@@ -1171,3 +1339,5 @@ function ScheduleSearchModal({ onClose, onScheduled }: { onClose: () => void, on
     </div>
   );
 }
+
+

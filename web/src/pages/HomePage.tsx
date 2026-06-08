@@ -298,7 +298,7 @@ export default function HomePage() {
     {
       name: "Canal de Denuncias",
       icon: "campaign",
-      enabled: false,
+      enabled: true,
       href: "/denuncias",
       description: "Canal seguro para presentar denuncias de manera confidencial.",
       color: "#F08030",
@@ -332,7 +332,7 @@ export default function HomePage() {
       {/* Header Global */}
       <header className="h-20 bg-white flex items-center justify-between px-10 shrink-0 z-30 relative shadow-sm">
         <img src="/logo-informaPeru.jpg" alt="INFORMA PERÚ" className="h-12 w-auto object-contain" />
-        
+
         {/* Cerrar Sesión Button (Apple-design inspired subtle utility button) */}
         <button
           onClick={handleLogout}
@@ -359,7 +359,7 @@ export default function HomePage() {
             {modules.map((m) => (
               <div
                 key={m.name}
-                className={`relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm p-6 flex flex-col justify-between transition-all duration-300 w-full sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] ${m.enabled
+                className={`relative bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm p-6 flex flex-col justify-between transition-all duration-300 w-full sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] ${m.enabled
                   ? "cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-slate-200/80 group"
                   : "opacity-60 cursor-not-allowed bg-slate-50/50"
                   }`}
@@ -433,7 +433,7 @@ export default function HomePage() {
 
         {/* Chat window */}
         {isChatOpen && (
-          <div className="fixed bottom-24 right-6 w-96 h-[520px] bg-white rounded-3xl shadow-[0_10px_50px_rgba(0,0,0,0.15)] border border-slate-100 flex flex-col overflow-hidden z-50 animate-chat-fade">
+          <div className="fixed bottom-24 right-6 w-96 h-[520px] bg-white rounded-3xl shadow-[0_10px_50px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col overflow-hidden z-50 animate-chat-fade">
             {/* Chat Header */}
             <div className="bg-[#111827] text-white px-5 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
@@ -460,18 +460,17 @@ export default function HomePage() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 scrollbar-thin">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${
-                    msg.sender === "user"
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs shadow-sm ${msg.sender === "user"
                       ? "bg-[#3A6FD8] text-white rounded-tr-none font-medium"
-                      : "bg-white border border-slate-100 text-slate-700 rounded-tl-none font-semibold leading-relaxed"
-                  }`}>
+                      : "bg-white border border-slate-200 text-slate-700 rounded-tl-none font-semibold leading-relaxed"
+                    }`}>
                     {msg.text.split('\n\n').map((para: string, pIdx: number) => (
                       <p key={pIdx} className={pIdx > 0 ? "mt-2" : ""}>{para}</p>
                     ))}
 
                     {/* TTS Audio Controls */}
                     {msg.sender === "bot" && msg.audioText && (
-                      <div className="mt-3 pt-2 border-t border-slate-100 flex flex-col gap-2 select-none">
+                      <div className="mt-3 pt-2 border-t border-slate-200 flex flex-col gap-2 select-none">
                         {msg.audioUrl ? (
                           <div className="flex flex-col gap-2">
                             {/* Controls row */}
@@ -557,20 +556,20 @@ export default function HomePage() {
 
               {chatLoading && (
                 <div className="flex items-start">
-                  <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none px-4 py-3 text-xs shadow-sm text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 text-xs shadow-sm text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
                     <span className="material-symbols-outlined animate-spin text-xs">sync</span>
                     <span>Escribiendo...</span>
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </div>
 
             {/* Input Form */}
             <form
               onSubmit={(e) => { e.preventDefault(); sendMessage(inputText); }}
-              className="p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0"
+              className="p-3 bg-white border-t border-slate-200 flex gap-2 shrink-0"
             >
               <input
                 type="text"
@@ -594,8 +593,8 @@ export default function HomePage() {
 
       {/* Footer Global */}
       <footer className="h-10 bg-[#32508E] flex items-center justify-center px-4 shrink-0 z-30 shadow-inner">
-        <p className="text-[10px] text-white/90 text-center uppercase tracking-widest font-bold">
-          @COPYRIGHT; DESARROLLADO POR EL AREA DE TI - INFORMAPERU. TODOS LOS DERECHOS RESERVADOS 2026
+        <p className="text-[10px] text-white/90 text-center tracking-widest font-bold">
+          @Copyright; Desarrollado por el área de TI-InformaPerú. Todos los derechos reservados 2026
         </p>
       </footer>
 
