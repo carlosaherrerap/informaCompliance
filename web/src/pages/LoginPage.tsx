@@ -128,7 +128,7 @@ export default function LoginPage() {
                       <span className="material-symbols-outlined text-[#32508E] opacity-50 group-focus-within:opacity-100 transition-opacity">person</span>
                       <input
                         className="w-full border-none focus:ring-0 text-base py-3 px-3 placeholder:text-slate-400"
-                        placeholder="Ingrese nombre"
+                        placeholder="Ingrese el usuario"
                         value={usuario}
                         onChange={(e) => setUsuario(e.target.value)}
                         required
